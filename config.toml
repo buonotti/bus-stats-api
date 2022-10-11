@@ -1,0 +1,24 @@
+[database.development]
+user = "root"
+pass = "root"
+host = "localhost"
+port = 8000
+protocol = "http"
+
+[database.production]
+user = "root"
+pass = "root"
+host = "localhost"
+port = 8000
+protocol = "http"
+
+[gin.development]
+mode = "debug"
+trusted_proxies = ["172.0.0.1"]
+
+[gin.production]
+mode = "release"
+trusted_proxies = ["172.0.0.1"]
+
+[api]
+base_path = "/"
