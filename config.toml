@@ -22,3 +22,5 @@ trusted_proxies = ["172.0.0.1"]
 
 [api]
 base_path = "/"
+lifespan = 1
+key = "API_SECRET_GOES_BRRRRRRR"

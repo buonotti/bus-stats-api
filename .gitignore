@@ -1,5 +1,8 @@
 # Binaries for programs and plugins
 *.exe
+!bin/surreal-windows-amd64.exe
+!bin/surreal-linux-amd64
+!bin/surreal-linux-arm64
 *.exe~
 *.dll
 *.so
