@@ -4,6 +4,7 @@ pass = "root"
 host = "localhost"
 port = 8000
 protocol = "http"
+mode = "memory"
 
 [database.production]
 user = "root"
@@ -11,6 +12,7 @@ pass = "root"
 host = "localhost"
 port = 8000
 protocol = "http"
+mode = "memory"
 
 [gin.development]
 mode = "debug"
