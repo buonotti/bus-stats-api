@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/buonotti/bus-stats-api/controllers"
 	"github.com/buonotti/bus-stats-api/util"
 	"os/exec"
@@ -67,7 +68,12 @@ func startDatabase() {
 		surrealExe = surrealExe + ".exe"
 	}
 	cmd := exec.Command(surrealExe)
-	cmd.Args = []string{surrealExe, "start", viper.GetString(util.ConfigValue("database.{env}.mode")), "-p", viper.GetString(util.ConfigValue("database.{env}.pass"))}
+	mode := viper.GetString(util.ConfigValue("database.{env}.mode"))
+	user := viper.GetString(util.ConfigValue("database.{env}.user"))
+	pass := viper.GetString(util.ConfigValue("database.{env}.pass"))
+	fmt.Println(mode, pass)
+	cmd.Args = []string{surrealExe, "start", mode, "-u", user, "-p", pass}
+	fmt.Println(cmd.Args)
 	go func() {
 		_ = cmd.Run()
 	}()
