@@ -62,7 +62,10 @@ func configLogger() {
 }
 
 func startDatabase() {
-	surrealExe := "./vendor/surreal-" + runtime.GOOS + "-" + runtime.GOARCH
+	surrealExe := "./bin/surreal-v1.0.0-beta.8." + runtime.GOOS + "-" + runtime.GOARCH
+	if runtime.GOOS == "windows" {
+		surrealExe = surrealExe + ".exe"
+	}
 	cmd := exec.Command(surrealExe)
 	cmd.Args = []string{surrealExe, "start", viper.GetString(util.ConfigValue("database.{env}.mode")), "-p", viper.GetString(util.ConfigValue("database.{env}.pass"))}
 	go func() {
