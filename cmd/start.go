@@ -71,13 +71,12 @@ func configLogger() {
 }
 
 func startDatabase() {
-	surrealExe := "./bin/surreal-v1.0.0-beta.8." + runtime.GOOS + "-" + runtime.GOARCH
-	log.Debug(fmt.Sprintf("Db executable is: %s", surrealExe))
+	surrealExe := "./surreal"
 
 	if runtime.GOOS == "windows" {
 		surrealExe = surrealExe + ".exe"
 	}
-
+	log.Debug(fmt.Sprintf("Db executable is: %s", surrealExe))
 	cmd := exec.Command(surrealExe)
 	mode := viper.GetString(util.ConfigValue("database.{env}.mode"))
 	user := viper.GetString(util.ConfigValue("database.{env}.user"))
@@ -164,11 +163,10 @@ func runApi(cmd *cobra.Command, args []string) {
 		close(idleConnsClosed)
 	}()
 
+	log.Info("server listening")
 	if err := srv.ListenAndServe(); err != http.ErrServerClosed {
 		panic(err)
 	}
-
-	log.Info("server listening")
 
 	<-idleConnsClosed
 }

@@ -13,7 +13,8 @@
 
 bin/*
 !bin/surreal-v1.0.0-beta.8.linux-amd64
-release/
+release/*
+!release/bus-stats-linux-amd64
 data/database
 data/images
 

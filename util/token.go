@@ -11,7 +11,7 @@ import (
 )
 
 func GenerateToken(uid string) (string, error) {
-	token_lifespan, err := strconv.Atoi(viper.GetString("api.lifespan"))
+	tokenLifespan, err := strconv.Atoi(viper.GetString("api.lifespan"))
 
 	if err != nil {
 		return "", err
@@ -20,7 +20,7 @@ func GenerateToken(uid string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["uid"] = uid
-	claims["exp"] = time.Now().Add(time.Hour * time.Duration(token_lifespan)).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	return token.SignedString([]byte(viper.GetString("api.key")))
@@ -38,8 +38,34 @@ func ExtractToken(c *gin.Context) string {
 	return ""
 }
 
-func ExtractTokenID(c *gin.Context) (uint, error) {
+func TokenValid(c *gin.Context) error {
+	tokenString := ExtractToken(c)
+	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(viper.GetString("api.key")), nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+func TokenValidString(tokenString string) error {
+	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(viper.GetString("api.key")), nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ExtractTokenID(c *gin.Context) (uint, error) {
 	tokenString := ExtractToken(c)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

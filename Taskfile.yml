@@ -1,6 +1,12 @@
 version: "3"
 
 tasks:
+  docker:
+    deps:
+      - build_linux_amd64
+    cmds:
+      - docker build . -t bus-stats-api
+      - docker run -d --rm -p 8080:8080 bus-stats-api
   dev: go build && ./bus-stats-api.exe start --dev
   run: go build && ./bus-stats-api.exe start
   release:
