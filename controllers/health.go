@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/buonotti/bus-stats-api/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,7 +15,5 @@ import (
 // @Success 200 {string} HealthStatus
 // @Router /health [get]
 func HealthEndpoint(c *gin.Context) {
-	data := services.DbInfo()
-
-	c.JSON(200, gin.H{"status": data.Status})
+	c.JSON(200, nil)
 }

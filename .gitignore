@@ -12,6 +12,10 @@
 *.out
 
 bin/
+!bin/surreal-v1.0.0-beta.8-linux-amd64
+release/
+data/database
+data/images
 
 # Dependency directories (remove the comment below to include it)
 # vendor/

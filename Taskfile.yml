@@ -1,6 +1,52 @@
 version: "3"
 
 tasks:
-  run: go build && ./bus-stats-api.exe start --dev
-  run_release: go build && ./bus-stats-api.exe start
-  build: go build
+  dev: go build && ./bus-stats-api.exe start --dev
+  run: go build && ./bus-stats-api.exe start
+  release:
+    deps:
+      - build_linux_amd64
+      - build_linux_arm64
+      - build_darwin_amd64
+      - build_darwin_arm64
+      - build_windows_amd64
+
+  build_linux_amd64:
+    internal: true
+    env:
+      GOOS: linux
+      GOARCH: amd64
+    cmds:
+      - go build -o release/bus-stats-linux-amd64
+
+  build_linux_arm64:
+    internal: true
+    env:
+      GOOS: linux
+      GOARCH: arm64
+    cmds:
+      - go build -o release/bus-stats-linux-arm64
+
+  build_darwin_amd64:
+    internal: true
+    env:
+      GOOS: darwin
+      GOARCH: amd64
+    cmds:
+      - go build -o release/bus-stats-darwin-amd64
+
+  build_darwin_arm64:
+    internal: true
+    env:
+      GOOS: darwin
+      GOARCH: arm64
+    cmds:
+      - go build -o release/bus-stats-darwin-arm64
+  
+  build_windows_amd64:
+    internal: true
+    env:
+      GOOS: windows
+      GOARCH: amd64
+    cmds:
+      - go build -o release/bus-stats-windows-amd64.exe

@@ -1,28 +1,32 @@
+[api]
+base_path = '/'
+key = 'API_SECRET_GOES_BRRRRRRR'
+lifespan = 1
+
+[database]
+generated = true
+
 [database.development]
-user = "root"
-pass = "root"
-host = "localhost"
+host = 'localhost'
+mode = 'memory'
+pass = 'root'
 port = 8000
-protocol = "http"
-mode = "memory"
+protocol = 'http'
+user = 'root'
 
 [database.production]
-user = "root"
-pass = "root"
-host = "localhost"
+host = 'localhost'
+mode = 'file://data/database'
+pass = 'root'
 port = 8000
-protocol = "http"
-mode = "memory"
+protocol = 'http'
+user = 'root'
 
+[gin]
 [gin.development]
-mode = "debug"
-trusted_proxies = ["172.0.0.1"]
+mode = 'debug'
+trusted_proxies = ['172.0.0.1']
 
 [gin.production]
-mode = "release"
-trusted_proxies = ["172.0.0.1"]
-
-[api]
-base_path = "/"
-lifespan = 1
-key = "API_SECRET_GOES_BRRRRRRR"
+mode = 'release'
+trusted_proxies = ['172.0.0.1']
