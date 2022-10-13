@@ -2,14 +2,22 @@ version: "3"
 
 tasks:
   docker:
+    desc: "Run a docker container with the api"
     deps:
       - build_linux_amd64
     cmds:
       - docker build . -t bus-stats-api
       - docker run -d --rm -p 8080:8080 bus-stats-api
-  dev: go build && ./bus-stats-api.exe start --dev
-  run: go build && ./bus-stats-api.exe start
+  dev:
+    desc: "Runs the api in development mode"
+    cmds:
+      - go build && ./bus-stats-api.exe start --dev
+  run:
+    desc: "Runs the api in production mode"
+    cmds:
+      - go build && ./bus-stats-api.exe start
   release:
+    desc: "Builds release binaries"
     deps:
       - build_linux_amd64
       - build_linux_arm64

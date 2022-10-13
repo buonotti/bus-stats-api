@@ -28,4 +28,4 @@ COPY docker/startup.sh /startup.sh
 
 EXPOSE 8080
 
-CMD ["sh", "/startup.sh"]
+CMD ["/api/bus-stats", "start"]
