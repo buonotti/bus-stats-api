@@ -13,4 +13,5 @@ func MapRoutes(router *gin.RouterGroup, store *persist.MemoryStore) {
 		cache.CacheByRequestURI(store, 2*time.Second),
 		LoginUser)
 	router.POST("/register", RegisterUser)
+	router.POST("/refresh", RefreshUserToken)
 }

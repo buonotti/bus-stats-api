@@ -71,7 +71,7 @@ func configLogger() {
 }
 
 func startDatabase() {
-	surrealExe := "./surreal"
+	surrealExe := "./bin/surreal-v1.0.0-beta.8." + runtime.GOOS + "-" + runtime.GOARCH
 
 	if runtime.GOOS == "windows" {
 		surrealExe = surrealExe + ".exe"
@@ -86,9 +86,26 @@ func startDatabase() {
 		err := cmd.Run()
 		if err != nil {
 			log.Error(err)
+			os.Exit(1)
 		}
-		log.Info(fmt.Sprintf("started database with authentication in %s", mode))
 	}()
+
+	for i := 3; i >= 1 && !isDbOnline(); i-- {
+		log.Warn(fmt.Sprintf("database seems not to be online. retrying to connect. tries left: %d", i))
+		cmd := exec.Command("sleep", "2")
+		err := cmd.Run()
+		if err != nil {
+			log.Error("error while waiting for db")
+			os.Exit(1)
+		}
+	}
+
+	if !isDbOnline() {
+		log.Error("could not read database")
+		os.Exit(1)
+	}
+
+	log.Info(fmt.Sprintf("started database with authentication in %s", mode))
 	isDefined := viper.GetBool("database.generated")
 	if !isDefined {
 		_, err := util.RestClient.R().SetBody(`
@@ -169,4 +186,12 @@ func runApi(cmd *cobra.Command, args []string) {
 	}
 
 	<-idleConnsClosed
+}
+
+func isDbOnline() bool {
+	_, err := util.RestClient.R().SetBody("INFO FOR DB;").Post(util.DatabaseUrl("sql"))
+	if err != nil {
+		return false
+	}
+	return true
 }
