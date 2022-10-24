@@ -22,14 +22,15 @@ port = 8000
 protocol = 'http'
 user = 'root'
 
-[gin]
 [gin.development]
 mode = 'debug'
 trusted_proxies = ['172.0.0.1']
+allow_origin = "*"
 
 [gin.production]
 mode = 'release'
 trusted_proxies = ['172.0.0.1']
+allow_origin = "*"
 
 [storage]
 content_root = 'data/images'
