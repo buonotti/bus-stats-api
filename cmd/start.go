@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/buonotti/bus-stats-api/controllers"
+	"github.com/buonotti/bus-stats-api/middleware"
 	"github.com/buonotti/bus-stats-api/util"
 
 	apiV1 "github.com/buonotti/bus-stats-api/controllers/v1"
@@ -150,6 +151,7 @@ func runApi(cmd *cobra.Command, args []string) {
 	router := gin.New()
 	router.Use(util.LogrusLogger())
 	router.Use(gin.Recovery())
+	router.Use(middleware.CORSMiddleware())
 	if util.Env == util.Development {
 		router.SetTrustedProxies(trustedProxies)
 	}

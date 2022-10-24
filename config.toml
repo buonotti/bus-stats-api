@@ -4,7 +4,7 @@ key = 'API_SECRET_GOES_BRRRRRRR'
 lifespan = 1
 
 [database]
-generated = true
+generated = false
 
 [database.development]
 host = 'localhost'
