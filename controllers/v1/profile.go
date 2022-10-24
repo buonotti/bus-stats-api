@@ -5,6 +5,7 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/buonotti/bus-stats-api/middleware"
+	"github.com/buonotti/bus-stats-api/models"
 	"github.com/buonotti/bus-stats-api/services"
 	serviceV1 "github.com/buonotti/bus-stats-api/services/v1"
 	"github.com/buonotti/bus-stats-api/util"
@@ -37,7 +38,7 @@ func UploadUserProfilePicture(c *gin.Context) {
 		return
 	}
 
-	result, err, status := serviceV1.SaveUserProfile(util.ExtractToken(c), userId, fileForm)
+	result, err, status := serviceV1.SaveUserProfile(util.ExtractToken(c), models.UserId(userId), fileForm)
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 		return
@@ -61,7 +62,7 @@ func UploadUserProfilePicture(c *gin.Context) {
 // @Router /profile [get]
 func GetUserProfile(c *gin.Context) {
 	userId := jwt.ExtractClaims(c)[middleware.IdentityKey].(string)
-	result, err, status := serviceV1.GetUserProfile(userId)
+	result, err, status := serviceV1.GetUserProfile(models.UserId(userId))
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 	}
