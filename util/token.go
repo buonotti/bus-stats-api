@@ -2,12 +2,13 @@ package util
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/spf13/viper"
 )
 
 func GenerateToken(uid string) (string, error) {
@@ -42,7 +43,7 @@ func TokenValid(c *gin.Context) error {
 	tokenString := ExtractToken(c)
 	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(viper.GetString("api.key")), nil
 	})
@@ -55,7 +56,7 @@ func TokenValid(c *gin.Context) error {
 func TokenValidString(tokenString string) error {
 	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(viper.GetString("api.key")), nil
 	})
@@ -65,24 +66,25 @@ func TokenValidString(tokenString string) error {
 	return nil
 }
 
-func ExtractTokenID(c *gin.Context) (uint, error) {
+func ExtractTokenID(c *gin.Context) (string, error) {
 	tokenString := ExtractToken(c)
+	id, err := ExtractTokenIdString(tokenString)
+	return id, err
+}
+
+func ExtractTokenIdString(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(viper.GetString("api.key")), nil
 	})
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		uid, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["user_id"]), 10, 32)
-		if err != nil {
-			return 0, err
-		}
-		return uint(uid), nil
+		return fmt.Sprint(claims["user_id"]), nil
 	}
-	return 0, nil
+	return "", nil
 }

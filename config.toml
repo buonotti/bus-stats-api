@@ -30,3 +30,6 @@ trusted_proxies = ['172.0.0.1']
 [gin.production]
 mode = 'release'
 trusted_proxies = ['172.0.0.1']
+
+[storage]
+content_root = 'data/images'

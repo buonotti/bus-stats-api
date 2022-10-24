@@ -8,12 +8,11 @@ import (
 
 // HealthEndpoint godoc
 // @Summary Health check
-// @Schemes
 // @Description Get the health status of the API
-// @Accept json
-// @Produce json
-// @Success 200 {string} HealthStatus
+// @ID health
+// @Tags health
+// @Success 200
 // @Router /health [get]
 func HealthEndpoint(c *gin.Context) {
-	c.JSON(200, nil)
+	c.Status(200)
 }

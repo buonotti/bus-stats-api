@@ -1,17 +1,292 @@
+basePath: /api/v1
+definitions:
+  services.ErrorResponse:
+    properties:
+      message:
+        example: an error has occured
+        type: string
+    type: object
+  v1.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        description: TODO sha265
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  v1.LoginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  v1.RefreshResponse:
+    properties:
+      result:
+        type: string
+      token:
+        type: string
+    type: object
+  v1.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        description: TODO add sha256
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  v1.RegisterResponse:
+    properties:
+      id:
+        type: string
+      result:
+        type: string
+    type: object
+  v1.SaveUserProfileResponse:
+    properties:
+      result:
+        type: string
+    type: object
+host: localhost:8080/api/v1
 info:
   contact: {}
+  description: The backend api for the bus-stats project
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: bus-stats api
+  version: "1.0"
 paths:
   /health:
     get:
+      description: Get the health status of the API
+      operationId: health
+      responses:
+        "200":
+          description: OK
+      summary: Health check
+      tags:
+      - health
+  /login:
+    post:
       consumes:
       - application/json
-      description: Get the health status of the API
+      description: Logs a user in using the provided credentials
+      operationId: login-user
+      parameters:
+      - description: content
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/v1.LoginRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+      summary: Logs a user in
+      tags:
+      - authentication
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Logs the current user out
+      operationId: logout-user
+      parameters:
+      - description: content
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/v1.LoginRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+      summary: Logs a user out
+      tags:
+      - authentication
+  /profile:
+    get:
+      description: Get the profile picture file for the currently authenticated user
+      operationId: get-profile
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - multipart/form-data
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: binary
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get the profile picture a user
+      tags:
+      - user-account
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a user profile picture in a form for the currently logged-in
+        user
+      operationId: upload-profile
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: picture form data
+        in: formData
+        name: image
+        required: true
+        type: file
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: string
-      summary: Health check
+            $ref: '#/definitions/v1.SaveUserProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload user profile picture
+      tags:
+      - user-account
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes a user token identified by the given id
+      operationId: refresh-token
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.RefreshResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Refresh token
+      tags:
+      - authentication
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a user. The response contains a token used for authentication
+      operationId: register-user
+      parameters:
+      - description: content
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/v1.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+      summary: Register user
+      tags:
+      - authentication
 swagger: "2.0"

@@ -3,14 +3,15 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/buonotti/bus-stats-api/controllers"
-	"github.com/buonotti/bus-stats-api/util"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
 	"runtime"
 	"time"
+
+	"github.com/buonotti/bus-stats-api/controllers"
+	"github.com/buonotti/bus-stats-api/util"
 
 	apiV1 "github.com/buonotti/bus-stats-api/controllers/v1"
 	"github.com/buonotti/bus-stats-api/docs"
@@ -112,12 +113,15 @@ func startDatabase() {
 DEFINE TABLE user SCHEMAFULL;
 DEFINE FIELD email ON user TYPE string;
 DEFINE FIELD password ON user TYPE string;
+DEFINE FIELD image ON user TYPE object;
+DEFINE FIELD image.name ON user TYPE string;
+DEFINE FIELD image.type ON user TYPE string;
 DEFINE TABLE stop SCHEMAFULL;
 DEFINE FIELD name ON stop TYPE string;
 DEFINE FIELD location ON stop TYPE array;
 DEFINE TABLE line SCHEMAFULL;
 DEFINE FIELD name ON line TYPE string;
-`).Post(util.DatabaseUrl("sql"))
+`).Post(util.DatabaseUrl())
 		if err != nil {
 			log.Error(err)
 			os.Exit(1)
@@ -158,7 +162,7 @@ func runApi(cmd *cobra.Command, args []string) {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	srv := &http.Server{
-		Addr: ":8080",
+		Addr:    ":8080",
 		Handler: router,
 	}
 	idleConnsClosed := make(chan struct{})
@@ -189,7 +193,7 @@ func runApi(cmd *cobra.Command, args []string) {
 }
 
 func isDbOnline() bool {
-	_, err := util.RestClient.R().SetBody("INFO FOR DB;").Post(util.DatabaseUrl("sql"))
+	_, err := util.RestClient.R().SetBody("INFO FOR DB;").Post(util.DatabaseUrl())
 	if err != nil {
 		return false
 	}
