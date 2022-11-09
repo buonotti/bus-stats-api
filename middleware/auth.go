@@ -54,7 +54,16 @@ func Auth() *jwt.GinJWTMiddleware {
 			util.ApiLogger.Debugf("authorizing %s", c.RemoteIP())
 			if v, ok := data.(*models.BaseUser); ok {
 				if v != nil {
-					return true
+					urlId := c.Param("id")
+					if urlId != "" {
+						if urlId != v.Id {
+							util.ApiLogger.Warnf("user with id %s tried to access resources of %s", v.Id, urlId)
+							return false
+						} else {
+							return true
+						}
+					}
+					
 				}
 			}
 			return false

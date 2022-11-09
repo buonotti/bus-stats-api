@@ -36,9 +36,9 @@ func Query(query string, args ...interface{}) string {
 }
 
 func DatabaseUrl() string {
-	protocol := viper.GetString(ConfigValue("database.{env}.protocol"))
-	host := viper.GetString(ConfigValue("database.{env}.host"))
-	port := viper.GetInt(ConfigValue("database.{env}.port"))
+	protocol := viper.GetString(GetConfig("database.{env}.protocol"))
+	host := viper.GetString(GetConfig("database.{env}.host"))
+	port := viper.GetInt(GetConfig("database.{env}.port"))
 
 	return protocol + "://" + host + ":" + strconv.Itoa(port) + "/sql"
 }

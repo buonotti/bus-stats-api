@@ -1,10 +1,13 @@
 package util
 
-import "github.com/go-resty/resty/v2"
+import (
+	"github.com/go-resty/resty/v2"
+	"github.com/spf13/viper"
+)
 
 var RestClient = resty.New().
-	SetBasicAuth("root", "root").
+	SetBasicAuth(viper.GetString(GetConfig("database.{env}.user")), viper.GetString(GetConfig("database.{env}.pass"))).
 	SetHeader("Content-Type", "application/json").
-	SetHeader("NS", "buonotti").
-	SetHeader("DB", "bus-stats").
+	SetHeader("NS", viper.GetString("database.{env}.ns")).
+	SetHeader("DB", viper.GetString("database.{env}.db")).
 	SetDisableWarn(true)

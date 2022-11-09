@@ -3,34 +3,43 @@ base_path = '/'
 key = 'API_SECRET_GOES_BRRRRRRR'
 lifespan = 1
 
+[cli]
+version = '0.1.0-beta.1'
+
 [database]
 generated = false
+executable = "./surreal"
 
 [database.development]
+db = 'bus-stats'
 host = 'localhost'
 mode = 'memory'
+ns = 'buonotti'
 pass = 'root'
 port = 8000
 protocol = 'http'
 user = 'root'
 
 [database.production]
+db = 'bus-stats'
 host = 'localhost'
 mode = 'file://data/database'
+ns = 'buonotti'
 pass = 'root'
 port = 8000
 protocol = 'http'
 user = 'root'
 
+[gin]
 [gin.development]
+allow_origin = '*'
 mode = 'debug'
 trusted_proxies = ['172.0.0.1']
-allow_origin = "*"
 
 [gin.production]
+allow_origin = '*'
 mode = 'release'
 trusted_proxies = ['172.0.0.1']
-allow_origin = "*"
 
 [storage]
 content_root = 'data/images'

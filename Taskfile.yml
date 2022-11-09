@@ -11,11 +11,11 @@ tasks:
   dev:
     desc: "Runs the api in development mode"
     cmds:
-      - go build && ./bus-stats-api.exe start --dev
+      - go build && ./bus-stats-api{{if eq OS "windows"}}.exe{{end}} start --dev
   run:
     desc: "Runs the api in production mode"
     cmds:
-      - go build && ./bus-stats-api.exe start
+      - go build && ./bus-stats-api{{if eq OS "windows"}}.exe{{end}} start
   release:
     desc: "Builds release binaries"
     deps:

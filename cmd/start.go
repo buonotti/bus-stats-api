@@ -29,7 +29,7 @@ var isDev bool
 
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start the API",
+	Short: "Start the API and the database",
 	Run: func(cmd *cobra.Command, args []string) {
 		if isDev {
 			util.Env = util.Development
@@ -38,11 +38,17 @@ var startCmd = &cobra.Command{
 			util.Env = util.Production
 			log.SetLevel(log.InfoLevel)
 		}
+		// init config library and load config values
 		loadConfig()
-		configLogger()
-		startDatabase()
-		runApi(cmd, args)
 
+		// config logger formats
+		configLogger()
+
+		// run the database
+		startDatabase()
+
+		// start the web api
+		startApi(cmd, args)
 	},
 }
 
@@ -51,6 +57,10 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 }
 
+/*
+Loads the config file. The search path is the current path (the one the exe is located in).
+The config can be in any of the supported formats though the structure must be the same
+*/
 func loadConfig() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
@@ -61,6 +71,9 @@ func loadConfig() {
 	}
 }
 
+/*
+Sets the logger format depending on the environment
+*/
 func configLogger() {
 	if util.Env == util.Development {
 		log.SetFormatter(&log.TextFormatter{
@@ -72,17 +85,21 @@ func configLogger() {
 	}
 }
 
+/*
+Starts the surrealDb database in a goroutine. The executable is searched in ./bin. If the database is not reachable theù
+api tries three times to connect to it. If the database schema is not created the cli also creates the table
+*/
 func startDatabase() {
-	surrealExe := "./bin/surreal-v1.0.0-beta.8." + runtime.GOOS + "-" + runtime.GOARCH
+	surrealExe := viper.GetString("database.executable")
 
 	if runtime.GOOS == "windows" {
 		surrealExe = surrealExe + ".exe"
 	}
 	log.Debug(fmt.Sprintf("Db executable is: %s", surrealExe))
 	cmd := exec.Command(surrealExe)
-	mode := viper.GetString(util.ConfigValue("database.{env}.mode"))
-	user := viper.GetString(util.ConfigValue("database.{env}.user"))
-	pass := viper.GetString(util.ConfigValue("database.{env}.pass"))
+	mode := viper.GetString(util.GetConfig("database.{env}.mode"))
+	user := viper.GetString(util.GetConfig("database.{env}.user"))
+	pass := viper.GetString(util.GetConfig("database.{env}.pass"))
 	cmd.Args = []string{surrealExe, "start", "-u", user, "-p", pass, mode}
 	go func() {
 		err := cmd.Run()
@@ -128,7 +145,7 @@ DEFINE FIELD name ON line TYPE string;
 			os.Exit(1)
 		}
 
-		log.Info("generated dabase tables")
+		log.Info("generated database tables")
 
 		viper.Set("database.generated", true)
 		err = viper.WriteConfig()
@@ -141,10 +158,10 @@ DEFINE FIELD name ON line TYPE string;
 /*
 Entry point for the api
 */
-func runApi(cmd *cobra.Command, args []string) {
-	docs.SwaggerInfo.BasePath = viper.GetString(util.ConfigValue("api.base_path"))
-	gin.SetMode(viper.GetString(util.ConfigValue("gin.{env}.mode")))
-	trustedProxies := viper.GetStringSlice(util.ConfigValue("gin.{env}.trusted_proxies"))
+func startApi(cmd *cobra.Command, args []string) {
+	docs.SwaggerInfo.BasePath = viper.GetString(util.GetConfig("api.base_path"))
+	gin.SetMode(viper.GetString(util.GetConfig("gin.{env}.mode")))
+	trustedProxies := viper.GetStringSlice(util.GetConfig("gin.{env}.trusted_proxies"))
 
 	store := persist.NewMemoryStore(2 * time.Minute)
 
@@ -176,7 +193,7 @@ func runApi(cmd *cobra.Command, args []string) {
 			panic(err) // TODO
 		}
 		log.Info("shut down server")
-		if viper.GetString(util.ConfigValue("database.{env}.mode")) == "memory" {
+		if viper.GetString(util.GetConfig("database.{env}.mode")) == "memory" {
 			viper.Set("database.generated", false)
 			err := viper.WriteConfig()
 			if err != nil {
@@ -196,8 +213,5 @@ func runApi(cmd *cobra.Command, args []string) {
 
 func isDbOnline() bool {
 	_, err := util.RestClient.R().SetBody("INFO FOR DB;").Post(util.DatabaseUrl())
-	if err != nil {
-		return false
-	}
-	return true
+	return err == nil
 }

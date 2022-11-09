@@ -15,6 +15,6 @@ func (e environment) String() string {
 	return string(e)
 }
 
-func ConfigValue(value string) string {
-	return strings.ReplaceAll(value, "{env}", Env.String())
+func GetConfig(key string) string {
+	return strings.ReplaceAll(key, "{env}", Env.String())
 }

@@ -2,6 +2,8 @@ package main
 
 import "github.com/buonotti/bus-stats-api/cmd"
 
+// swag base information
+
 // @basePath /api/v1
 // @host localhost:8080/api/v1
 

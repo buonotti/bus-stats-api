@@ -2,7 +2,6 @@ package v1
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/buonotti/bus-stats-api/models"
+	"github.com/buonotti/bus-stats-api/services"
 	"github.com/buonotti/bus-stats-api/util"
 )
 
@@ -21,10 +21,10 @@ type GetUserProfileResponse struct {
 	FileName string `json:"file_name"`
 }
 
-func SaveUserProfile(userToken string, userId models.UserId, formFile *multipart.FileHeader) (SaveUserProfileResponse, error, int) {
+func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (SaveUserProfileResponse, error, int) {
 	file, err := formFile.Open()
 	if err != nil {
-		return SaveUserProfileResponse{}, fmt.Errorf("could not open sent file"), http.StatusInternalServerError
+		return SaveUserProfileResponse{}, services.FileError, http.StatusBadRequest
 	}
 	defer func(file multipart.File) {
 		err := file.Close()
@@ -32,11 +32,6 @@ func SaveUserProfile(userToken string, userId models.UserId, formFile *multipart
 			// Ignored
 		}
 	}(file)
-	uidStr, err := util.ExtractTokenIdString(userToken)
-	uid := models.UserId(uidStr)
-	if uid != userId {
-		return SaveUserProfileResponse{}, fmt.Errorf("user id and token id do not match"), http.StatusUnauthorized
-	}
 
 	fileNameSplit := strings.Split(formFile.Filename, ".")
 	ext := fileNameSplit[len(fileNameSplit)-2]
@@ -44,17 +39,17 @@ func SaveUserProfile(userToken string, userId models.UserId, formFile *multipart
 	var fileContent = make([]byte, 10_000_000)
 	_, err = file.Read(fileContent)
 	if err != nil {
-		return SaveUserProfileResponse{}, fmt.Errorf("could not read file content"), http.StatusInternalServerError
+		return SaveUserProfileResponse{}, services.FileError, http.StatusBadRequest
 	}
-	fileName := util.BuildFileName(string(uid), ext)
+	fileName := util.FileName(string(userId), ext)
 	util.FsLogger.Infof("saving file %s", fileName)
 	err = ioutil.WriteFile(fileName, fileContent, os.ModePerm)
 	if err != nil {
-		return SaveUserProfileResponse{}, fmt.Errorf("could not save file to disk"), http.StatusInternalServerError
+		return SaveUserProfileResponse{}, services.FileError, http.StatusBadRequest
 	}
 
 	_, err = util.RestClient.R().
-		SetBody(util.Query("UPDATE user:? SET image.name = ?, image.type = ?", uid, uid, ext)).
+		SetBody(util.Query("UPDATE user:? SET image.name = ?, image.type = ?", userId, userId, ext)).
 		Post(util.DatabaseUrl())
 
 	return SaveUserProfileResponse{
@@ -68,22 +63,22 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, error, int) {
 		Post(util.DatabaseUrl())
 
 	if err != nil {
-		return GetUserProfileResponse{}, fmt.Errorf("could not get user information"), http.StatusInternalServerError
+		return GetUserProfileResponse{}, services.CredentialError, http.StatusUnauthorized
 	}
 
 	var selectUserResponse models.UserSelectResult
 	responseString := util.FormatResponseString(selectResponse)
 	err = json.Unmarshal([]byte(responseString), &selectUserResponse)
 	if err != nil {
-		return GetUserProfileResponse{}, fmt.Errorf("unexpected database response for userSelectResult %s", err.Error()), http.StatusBadRequest
+		return GetUserProfileResponse{}, services.FormatError, http.StatusBadRequest
 	}
 
 	if len(selectUserResponse.Result) < 1 {
-		return GetUserProfileResponse{}, fmt.Errorf("no user with such id present"), http.StatusInternalServerError
+		return GetUserProfileResponse{}, services.CredentialError, http.StatusUnauthorized
 	}
 
 	imageData := selectUserResponse.Result[0].Image
-	fileName := util.BuildFileName(imageData.Name, imageData.Type)
+	fileName := util.FileName(imageData.Name, imageData.Type)
 
 	return GetUserProfileResponse{FileName: fileName}, nil, http.StatusOK
 }

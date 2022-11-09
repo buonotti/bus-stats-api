@@ -8,7 +8,6 @@ import (
 	"github.com/buonotti/bus-stats-api/models"
 	"github.com/buonotti/bus-stats-api/services"
 	serviceV1 "github.com/buonotti/bus-stats-api/services/v1"
-	"github.com/buonotti/bus-stats-api/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -38,7 +37,7 @@ func UploadUserProfilePicture(c *gin.Context) {
 		return
 	}
 
-	result, err, status := serviceV1.SaveUserProfile(util.ExtractToken(c), models.UserId(userId), fileForm)
+	result, err, status := serviceV1.SaveUserProfile(models.UserId(userId), fileForm)
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 		return

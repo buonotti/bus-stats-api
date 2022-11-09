@@ -1,11 +1,16 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+)
 
+// Root command
 var rootCmd = &cobra.Command{
-	
+	Version: viper.GetString("cli.version"),
+	Use:     "bus-stats-api",
 }
 
 func Execute() {
-	rootCmd.Execute() // TODO
+	cobra.CheckErr(rootCmd.Execute())
 }
