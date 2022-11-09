@@ -18,10 +18,10 @@ release/*
 !release/bus-stats-linux-amd64
 data/database
 data/images
-config.toml
 
-# TODO exclude config
-# config.toml
+
+# exclude config
+config.toml
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
