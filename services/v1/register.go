@@ -20,37 +20,37 @@ type RegisterResponse struct {
 	Id     string `json:"id"`
 }
 
-func RegisterUser(data RegisterRequest) (RegisterResponse, error, int) {
+func RegisterUser(data RegisterRequest) (RegisterResponse, int, error) {
 	selectResponse, err := util.RestClient.R().
 		SetBody(util.Query("SELECT * FROM user WHERE email = ?;", data.Email)).
 		Post(util.DatabaseUrl())
 	if err != nil {
-		return RegisterResponse{}, services.CredentialError, http.StatusBadRequest
+		return RegisterResponse{}, http.StatusBadRequest, services.CredentialError
 	}
 
 	var selectUserResponse models.UserSelectResult
 	responseString := util.FormatResponseString(selectResponse)
 	err = json.Unmarshal([]byte(responseString), &selectUserResponse)
 	if err != nil {
-		return RegisterResponse{}, services.FormatError, http.StatusBadRequest
+		return RegisterResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
 	if len(selectUserResponse.Result) >= 1 {
-		return RegisterResponse{}, fmt.Errorf("email already in use"), http.StatusBadRequest
+		return RegisterResponse{}, http.StatusBadRequest, fmt.Errorf("email already in use")
 	}
 
 	insertResponse, err := util.RestClient.R().
 		SetBody(util.Query("CREATE user SET email = ?, password = ?, image = {name: '', type: ''} RETURN id;", data.Email, data.Password)).
 		Post(util.DatabaseUrl())
 	if err != nil {
-		return RegisterResponse{}, services.FormatError, http.StatusBadRequest
+		return RegisterResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
 	var insertUserResponse models.UserInsertResult
 	responseString = util.FormatResponseString(insertResponse)
 	err = json.Unmarshal([]byte(responseString), &insertUserResponse)
 	if err != nil {
-		return RegisterResponse{}, services.FormatError, http.StatusBadRequest
+		return RegisterResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
 	userId := util.SplitDatabaseId(insertUserResponse.Result[0].Id)
@@ -58,5 +58,5 @@ func RegisterUser(data RegisterRequest) (RegisterResponse, error, int) {
 	return RegisterResponse{
 		Result: "OK",
 		Id:     userId,
-	}, nil, http.StatusOK
+	}, http.StatusOK, nil
 }

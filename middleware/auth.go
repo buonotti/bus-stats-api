@@ -38,7 +38,7 @@ func Auth() *jwt.GinJWTMiddleware {
 			if err := c.ShouldBind(&loginRequest); err != nil {
 				return "", err
 			}
-			user, err, _ := serviceV1.LoginUser(loginRequest)
+			user, _, err := serviceV1.LoginUser(loginRequest)
 			if err != nil {
 				return nil, jwt.ErrFailedAuthentication
 			}
@@ -63,7 +63,7 @@ func Auth() *jwt.GinJWTMiddleware {
 							return true
 						}
 					}
-					
+
 				}
 			}
 			return false

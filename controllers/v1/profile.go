@@ -37,7 +37,7 @@ func UploadUserProfilePicture(c *gin.Context) {
 		return
 	}
 
-	result, err, status := serviceV1.SaveUserProfile(models.UserId(userId), fileForm)
+	result, status, err := serviceV1.SaveUserProfile(models.UserId(userId), fileForm)
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 		return
@@ -61,7 +61,7 @@ func UploadUserProfilePicture(c *gin.Context) {
 // @Router /profile [get]
 func GetUserProfile(c *gin.Context) {
 	userId := jwt.ExtractClaims(c)[middleware.IdentityKey].(string)
-	result, err, status := serviceV1.GetUserProfile(models.UserId(userId))
+	result, status, err := serviceV1.GetUserProfile(models.UserId(userId))
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 	}

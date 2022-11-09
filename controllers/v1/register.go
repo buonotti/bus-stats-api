@@ -30,7 +30,7 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
-	_, err, status := serviceV1.RegisterUser(request)
+	_, status, err := serviceV1.RegisterUser(request)
 
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
