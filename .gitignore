@@ -5,6 +5,8 @@
 *.so
 *.dylib
 
+bus-stats-api
+
 # Test binary, built with `go test -c`
 *.test
 
