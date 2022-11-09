@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/buonotti/bus-stats-api/models"
@@ -35,7 +36,7 @@ func RegisterUser(data RegisterRequest) (RegisterResponse, error, int) {
 	}
 
 	if len(selectUserResponse.Result) >= 1 {
-		return RegisterResponse{}, services.CredentialError, http.StatusBadRequest
+		return RegisterResponse{}, fmt.Errorf("email already in use"), http.StatusBadRequest
 	}
 
 	insertResponse, err := util.RestClient.R().
