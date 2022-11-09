@@ -100,7 +100,7 @@ func startDatabase() {
 	mode := viper.GetString(util.GetConfig("database.{env}.mode"))
 	user := viper.GetString(util.GetConfig("database.{env}.user"))
 	pass := viper.GetString(util.GetConfig("database.{env}.pass"))
-	cmd.Args = []string{surrealExe, "start", "-u", user, "-p", pass, mode}
+	cmd.Args = []string{surrealExe, "start", "--user", user, "--pass", pass, mode}
 	go func() {
 		err := cmd.Run()
 		if err != nil {

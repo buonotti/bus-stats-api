@@ -6,8 +6,9 @@ import (
 )
 
 var RestClient = resty.New().
-	SetBasicAuth(viper.GetString(GetConfig("database.{env}.user")), viper.GetString(GetConfig("database.{env}.pass"))).
+	SetBasicAuth("root", "root").
 	SetHeader("Content-Type", "application/json").
 	SetHeader("NS", viper.GetString("database.{env}.ns")).
 	SetHeader("DB", viper.GetString("database.{env}.db")).
+	SetHeader("Accept", "application/json").
 	SetDisableWarn(true)

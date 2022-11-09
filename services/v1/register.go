@@ -25,6 +25,7 @@ func RegisterUser(data RegisterRequest) (RegisterResponse, int, error) {
 		SetBody(util.Query("SELECT * FROM user WHERE email = ?;", data.Email)).
 		Post(util.DatabaseUrl())
 	if err != nil {
+		util.ApiLogger.Error(err)
 		return RegisterResponse{}, http.StatusBadRequest, services.CredentialError
 	}
 
@@ -32,6 +33,8 @@ func RegisterUser(data RegisterRequest) (RegisterResponse, int, error) {
 	responseString := util.FormatResponseString(selectResponse)
 	err = json.Unmarshal([]byte(responseString), &selectUserResponse)
 	if err != nil {
+		util.ApiLogger.Debug(selectResponse.Request.Header)
+		util.ApiLogger.Error(err)
 		return RegisterResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
@@ -43,6 +46,7 @@ func RegisterUser(data RegisterRequest) (RegisterResponse, int, error) {
 		SetBody(util.Query("CREATE user SET email = ?, password = ?, image = {name: '', type: ''} RETURN id;", data.Email, data.Password)).
 		Post(util.DatabaseUrl())
 	if err != nil {
+		util.ApiLogger.Error(err)
 		return RegisterResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
@@ -50,6 +54,7 @@ func RegisterUser(data RegisterRequest) (RegisterResponse, int, error) {
 	responseString = util.FormatResponseString(insertResponse)
 	err = json.Unmarshal([]byte(responseString), &insertUserResponse)
 	if err != nil {
+		util.ApiLogger.Error(err)
 		return RegisterResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
