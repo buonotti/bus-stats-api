@@ -86,7 +86,7 @@ func configLogger() {
 }
 
 /*
-Starts the surrealDb database in a goroutine. The executable is searched in ./bin. If the database is not reachable theù
+Starts the surrealDb database in a goroutine. The executable is searched in ./bin. If the database is not reachable the
 api tries three times to connect to it. If the database schema is not created the cli also creates the table
 */
 func startDatabase() {
