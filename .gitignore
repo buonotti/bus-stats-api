@@ -5,8 +5,6 @@
 *.so
 *.dylib
 
-bus-stats-api
-
 # Test binary, built with `go test -c`
 *.test
 
@@ -14,8 +12,7 @@ bus-stats-api
 *.out
 
 surreal
-release/*
-!release/bus-stats-linux-amd64
+release/
 data/database
 data/images
 
