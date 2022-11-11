@@ -16,33 +16,39 @@ type LoginRequest struct {
 
 type LoginResponse struct {
 	Token string `json:"token"`
+	Uid   string `json:"uid"`
 }
 
-func LoginUser(data LoginRequest) (models.BaseUser, int, error) {
+func LoginUser(data LoginRequest) (LoginResponse, int, error) {
 	selectResponse, err := util.RestClient.R().
 		SetBody(util.Query("SELECT * FROM user WHERE email = ?", data.Email)).
 		Post(util.DatabaseUrl())
 	if err != nil {
-		return models.BaseUser{}, http.StatusBadRequest, services.FormatError
+		return LoginResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
 	var selectUserResponse models.UserSelectResult
 	responseString := util.FormatResponseString(selectResponse)
 	err = json.Unmarshal([]byte(responseString), &selectUserResponse)
 	if err != nil {
-		return models.BaseUser{}, http.StatusBadRequest, services.FormatError
+		return LoginResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
 	if len(selectUserResponse.Result) <= 0 {
-		return models.BaseUser{}, http.StatusUnauthorized, services.CredentialError
+		return LoginResponse{}, http.StatusUnauthorized, services.CredentialError
 	}
 
 	if data.Password == selectUserResponse.Result[0].Password {
-		return models.BaseUser{
-			Id:    util.SplitDatabaseId(selectUserResponse.Result[0].Id),
-			Email: data.Email,
+		userId := util.SplitDatabaseId(selectUserResponse.Result[0].Id)
+		token, err := util.JWTAuthService().GenerateToken(userId)
+		if err != nil {
+			return LoginResponse{}, http.StatusUnauthorized, services.CredentialError
+		}
+		return LoginResponse{
+			Uid:   userId,
+			Token: token,
 		}, http.StatusOK, nil
 	}
 
-	return models.BaseUser{}, http.StatusUnauthorized, services.CredentialError
+	return LoginResponse{}, http.StatusUnauthorized, services.CredentialError
 }

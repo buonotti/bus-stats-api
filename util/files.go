@@ -7,6 +7,6 @@ import (
 )
 
 func FileName(name string, ext string) string {
-	basePath := viper.GetString("storage")
+	basePath := viper.GetString("storage.content_root")
 	return fmt.Sprintf("%s/%s.%s", basePath, name, ext)
 }

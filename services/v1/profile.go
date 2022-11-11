@@ -2,7 +2,7 @@ package v1
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -24,6 +24,7 @@ type GetUserProfileResponse struct {
 func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (SaveUserProfileResponse, int, error) {
 	file, err := formFile.Open()
 	if err != nil {
+		util.DbLogger.Debugf(err.Error())
 		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
 	}
 	defer func(file multipart.File) {
@@ -31,27 +32,32 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 	}(file)
 
 	fileNameSplit := strings.Split(formFile.Filename, ".")
-	ext := fileNameSplit[len(fileNameSplit)-2]
+	ext := fileNameSplit[len(fileNameSplit)-1]
 
 	var fileContent = make([]byte, 10_000_000)
 	_, err = file.Read(fileContent)
 	if err != nil {
+		util.DbLogger.Debugf(err.Error())
 		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
 	}
 	fileName := util.FileName(string(userId), ext)
 	util.FsLogger.Infof("saving file %s", fileName)
-	err = ioutil.WriteFile(fileName, fileContent, os.ModePerm)
+	err = os.WriteFile(util.FileName(string(userId), ext), fileContent, 0644)
 	if err != nil {
+		util.DbLogger.Debugf(err.Error())
 		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
 	}
 
-	_, err = util.RestClient.R().
-		SetBody(util.Query("UPDATE user:? SET image.name = ?, image.type = ?", userId, userId, ext)).
+	dbResponse, err := util.RestClient.R().
+		SetBody(util.Query("UPDATE user:? SET image.name = ?, image.type = ?", userId, string(userId), ext)).
 		Post(util.DatabaseUrl())
 
 	if err != nil {
+		util.DbLogger.Debugf(err.Error())
 		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
 	}
+
+	util.DbLogger.Debug("db response", util.FormatResponseString(dbResponse)) // TODO remove
 
 	return SaveUserProfileResponse{
 		Result: "OK",
@@ -60,7 +66,7 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 
 func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 	selectResponse, err := util.RestClient.R().
-		SetBody("SELECT * FROM user:" + userId).
+		SetBody("SELECT * FROM user:" + string(userId)).
 		Post(util.DatabaseUrl())
 
 	if err != nil {
@@ -76,6 +82,10 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 
 	if len(selectUserResponse.Result) < 1 {
 		return GetUserProfileResponse{}, http.StatusUnauthorized, services.CredentialError
+	}
+
+	if selectUserResponse.Result[0].Image.Name == "" {
+		return GetUserProfileResponse{}, http.StatusNotFound, fmt.Errorf("no image found")
 	}
 
 	imageData := selectUserResponse.Result[0].Image

@@ -10,11 +10,10 @@ import (
 )
 
 func MapRoutes(router *gin.RouterGroup, store *persist.MemoryStore) {
-	router.POST("/login", middleware.Auth().LoginHandler)
-	router.POST("/logout", middleware.Auth().LogoutHandler)
+	router.POST("/login", LoginUser)
 	router.POST("/register", RegisterUser)
-	router.POST("/refresh", middleware.Auth().RefreshHandler)
-	router.Use(middleware.Auth().MiddlewareFunc())
+	router.POST("/refresh", RefreshUserToken)
+	router.Use(middleware.Auth())
 	{
 		router.POST("/profile/:id", cache.CacheByRequestPath(store, 1*time.Minute), UploadUserProfilePicture)
 		router.GET("/profile/:id", GetUserProfile)

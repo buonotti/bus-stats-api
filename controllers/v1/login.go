@@ -1,6 +1,12 @@
 package v1
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/buonotti/bus-stats-api/services"
+	serviceV1 "github.com/buonotti/bus-stats-api/services/v1"
+	"github.com/gin-gonic/gin"
+)
 
 // LoginUser godoc
 // @Summary Logs a user in
@@ -17,5 +23,19 @@ import "github.com/gin-gonic/gin"
 // @Failure 500 {object} services.ErrorResponse
 // @Router /login [post]
 func LoginUser(c *gin.Context) {
-	// Handled by library, only here for docs. Check ./root.go
+	var request serviceV1.LoginRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, services.ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	response, status, err := serviceV1.LoginUser(request)
+
+	if err != nil {
+		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	c.JSON(status, response)
 }
