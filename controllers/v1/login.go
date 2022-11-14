@@ -24,14 +24,12 @@ import (
 // @Router /login [post]
 func LoginUser(c *gin.Context) {
 	var request serviceV1.LoginRequest
-
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, services.ErrorResponse{Message: err.Error()})
 		return
 	}
 
 	response, status, err := serviceV1.LoginUser(request)
-
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 		return

@@ -3,10 +3,10 @@ package v1
 import (
 	"net/http"
 
+	"github.com/buonotti/bus-stats-api/jwt"
 	"github.com/buonotti/bus-stats-api/models"
 	"github.com/buonotti/bus-stats-api/services"
 	serviceV1 "github.com/buonotti/bus-stats-api/services/v1"
-	"github.com/buonotti/bus-stats-api/util"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +28,7 @@ import (
 // @Failure 500 {object} services.ErrorResponse
 // @Router /profile [post]
 func UploadUserProfilePicture(c *gin.Context) {
-	userId := util.ExtractUidFromHeader(c)
+	userId := jwt.ExtractUidFromHeader(c)
 	fileForm, err := c.FormFile("image")
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, services.ErrorResponse{Message: err.Error()})
@@ -40,6 +40,7 @@ func UploadUserProfilePicture(c *gin.Context) {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 		return
 	}
+
 	c.JSON(status, result)
 }
 
@@ -58,12 +59,13 @@ func UploadUserProfilePicture(c *gin.Context) {
 // @Failure 500 {object} services.ErrorResponse
 // @Router /profile [get]
 func GetUserProfile(c *gin.Context) {
-	userId := util.ExtractUidFromHeader(c)
+	userId := jwt.ExtractUidFromHeader(c)
+
 	result, status, err := serviceV1.GetUserProfile(models.UserId(userId))
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 		return
 	}
-	util.ApiLogger.Debugf("Sending file %s", result.FileName)
+
 	c.File(result.FileName)
 }

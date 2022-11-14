@@ -1,4 +1,4 @@
-package util
+package config
 
 import "strings"
 
@@ -15,6 +15,6 @@ func (e environment) String() string {
 	return string(e)
 }
 
-func GetConfig(key string) string {
+func Get(key string) string {
 	return strings.ReplaceAll(key, "{env}", Env.String())
 }

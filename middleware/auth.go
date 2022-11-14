@@ -3,28 +3,56 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/buonotti/bus-stats-api/util"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/buonotti/bus-stats-api/jwt"
+	"github.com/buonotti/bus-stats-api/logging"
+	goJWT "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 )
 
+const BEARER_SCHEMA = "Bearer "
+
 var IdentityKey = "identity"
 
+// Auth is a middleware that checks if the request has a valid JWT token and then authorizes the request
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		const BEARER_SCHEMA = "Bearer "
+		// Get the token string from the header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || len(authHeader) <= len(BEARER_SCHEMA)+1 {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing auth token"})
 			return
 		}
+
+		// Cut off the "Bearer " part of the header
 		tokenString := authHeader[len(BEARER_SCHEMA):]
-		token, err := util.JWTAuthService().ValidateToken(tokenString)
+
+		// Parse and validate the token
+		token, err := jwt.Service().ValidateToken(tokenString)
 		if token.Valid && err == nil {
-			claims := token.Claims.(jwt.MapClaims)
-			util.ApiLogger.Infof("Authenticated user %s", claims["uid"].(string))
+			claims := token.Claims.(goJWT.MapClaims)
+			uid := claims["uid"].(string)
+			logging.ApiLogger.Infof("authorizing user %s", claims["uid"].(string))
+			if !authorizeRoute(c, uid) {
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
 		} else {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}
+}
+
+func authorizeRoute(c *gin.Context, uid string) bool {
+	routeParam := c.Param("id")
+
+	// If no id is provided in the route, then the user is authorized because the route is not user-specific
+	if routeParam == "" {
+		return true
+	}
+
+	// If the id in the route is the same as the id in the token, then the user is authorized otherwise he tries to access another user's data
+	if routeParam != uid {
+		return false
+	}
+	return true
 }

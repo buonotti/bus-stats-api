@@ -1,10 +1,11 @@
-package util
+package logging
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"time"
 )
 
 func LogrusLogger() gin.HandlerFunc {
@@ -16,6 +17,6 @@ func LogrusLogger() gin.HandlerFunc {
 		t := time.Now()
 		c.Next()
 		elapsed := time.Since(t)
-		ApiLogger.WithFields(logrus.Fields{"time":fmt.Sprintf("%dms", elapsed.Milliseconds()), "status":c.Writer.Status()}).Info(url)
+		ApiLogger.WithFields(logrus.Fields{"time": fmt.Sprintf("%dms", elapsed.Milliseconds()), "status": c.Writer.Status()}).Info(url)
 	}
 }

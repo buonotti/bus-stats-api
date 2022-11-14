@@ -1,12 +1,11 @@
-package util
+package jwt
 
 import (
 	"fmt"
 	"time"
 
+	"github.com/buonotti/bus-stats-api/config"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 type JwtService interface {
@@ -25,15 +24,11 @@ type jwtServices struct {
 	issure    string
 }
 
-func JWTAuthService() JwtService {
+func Service() JwtService {
 	return &jwtServices{
-		secretKey: getSecretKey(),
-		issure:    "Bikash",
+		secretKey: config.Get("api.key"),
+		issure:    "Buonotti",
 	}
-}
-
-func getSecretKey() string {
-	return viper.GetString("api.key")
 }
 
 func (service *jwtServices) GenerateToken(uid string) (string, error) {
@@ -57,22 +52,6 @@ func (service *jwtServices) ValidateToken(encodedToken string) (*jwt.Token, erro
 		}
 		return []byte(service.secretKey), nil
 	})
-}
-
-func ExtractUidFromToken(token *jwt.Token) string {
-	return token.Claims.(jwt.MapClaims)["uid"].(string)
-}
-
-func ExtractUidFromHeader(c *gin.Context) string {
-	const BEARER_SCHEMA = "Bearer "
-	authHeader := c.GetHeader("Authorization")
-	tokenString := authHeader[len(BEARER_SCHEMA):]
-	token, err := JWTAuthService().ValidateToken(tokenString)
-	if err != nil {
-		return ""
-	}
-	claims := token.Claims.(jwt.MapClaims)
-	return claims["uid"].(string)
 }
 
 func (service *jwtServices) RefreshToken(token string, userId string) (string, error) {

@@ -14,5 +14,5 @@ import (
 // @Success 200
 // @Router /health [get]
 func HealthEndpoint(c *gin.Context) {
-	c.Status(200)
+	c.JSON(200, gin.H{"message": "ok"})
 }

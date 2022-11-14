@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/buonotti/bus-stats-api/jwt"
+	"github.com/buonotti/bus-stats-api/logging"
 	"github.com/buonotti/bus-stats-api/models"
 	"github.com/buonotti/bus-stats-api/services"
-	"github.com/buonotti/bus-stats-api/util"
+	"github.com/buonotti/bus-stats-api/surreal"
 )
 
 type LoginRequest struct {
@@ -20,17 +22,17 @@ type LoginResponse struct {
 }
 
 func LoginUser(data LoginRequest) (LoginResponse, int, error) {
-	selectResponse, err := util.RestClient.R().
-		SetBody(util.Query("SELECT * FROM user WHERE email = ?", data.Email)).
-		Post(util.DatabaseUrl())
+	selectResponse, err := surreal.Query("SELECT * FROM user WHERE email = ?", data.Email)
 	if err != nil {
+		logging.DbLogger.Error(err)
 		return LoginResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
 	var selectUserResponse models.UserSelectResult
-	responseString := util.FormatResponseString(selectResponse)
+	responseString := surreal.FormatResponse(selectResponse)
 	err = json.Unmarshal([]byte(responseString), &selectUserResponse)
 	if err != nil {
+		logging.ApiLogger.Error(err)
 		return LoginResponse{}, http.StatusBadRequest, services.FormatError
 	}
 
@@ -38,17 +40,19 @@ func LoginUser(data LoginRequest) (LoginResponse, int, error) {
 		return LoginResponse{}, http.StatusUnauthorized, services.CredentialError
 	}
 
-	if data.Password == selectUserResponse.Result[0].Password {
-		userId := util.SplitDatabaseId(selectUserResponse.Result[0].Id)
-		token, err := util.JWTAuthService().GenerateToken(userId)
-		if err != nil {
-			return LoginResponse{}, http.StatusUnauthorized, services.CredentialError
-		}
-		return LoginResponse{
-			Uid:   userId,
-			Token: token,
-		}, http.StatusOK, nil
+	if data.Password != selectUserResponse.Result[0].Password {
+		return LoginResponse{}, http.StatusUnauthorized, services.CredentialError
 	}
 
-	return LoginResponse{}, http.StatusUnauthorized, services.CredentialError
+	userId := surreal.SplitDatabaseId(selectUserResponse.Result[0].Id)
+	token, err := jwt.Service().GenerateToken(userId)
+	if err != nil {
+		logging.ApiLogger.Error(err)
+		return LoginResponse{}, http.StatusUnauthorized, services.CredentialError
+	}
+
+	return LoginResponse{
+		Uid:   userId,
+		Token: token,
+	}, http.StatusOK, nil
 }

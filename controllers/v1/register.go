@@ -24,18 +24,16 @@ import (
 // @Router /register [post]
 func RegisterUser(c *gin.Context) {
 	var request serviceV1.RegisterRequest
-
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, services.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	_, status, err := serviceV1.RegisterUser(request)
-
+	response, status, err := serviceV1.RegisterUser(request)
 	if err != nil {
 		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	c.Status(status)
+	c.JSON(status, response)
 }

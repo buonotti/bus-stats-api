@@ -3,7 +3,8 @@ package v1
 import (
 	"net/http"
 
-	"github.com/buonotti/bus-stats-api/util"
+	"github.com/buonotti/bus-stats-api/jwt"
+	"github.com/buonotti/bus-stats-api/logging"
 )
 
 type RefreshRequest struct {
@@ -16,10 +17,12 @@ type RefreshResponse struct {
 }
 
 func RefreshUserToken(data RefreshRequest) (RefreshResponse, int, error) {
-	token, err := util.JWTAuthService().RefreshToken(data.Token, data.Id)
+	token, err := jwt.Service().RefreshToken(data.Token, data.Id)
 	if err != nil {
+		logging.ApiLogger.Error(err)
 		return RefreshResponse{}, http.StatusUnauthorized, err
 	}
+
 	return RefreshResponse{
 		Token: token,
 	}, http.StatusOK, nil

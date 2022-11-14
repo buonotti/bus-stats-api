@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"github.com/buonotti/bus-stats-api/services"
+	serviceV1 "github.com/buonotti/bus-stats-api/services/v1"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,5 +22,17 @@ import (
 // @Failure 500 {object} services.ErrorResponse
 // @Router /refresh [post]
 func RefreshUserToken(c *gin.Context) {
-	// Handled by library, only here for docs. Check ./root.go
+	var request serviceV1.RefreshRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.AbortWithStatusJSON(400, services.ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	result, status, err := serviceV1.RefreshUserToken(request)
+	if err != nil {
+		c.AbortWithStatusJSON(status, services.ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	c.JSON(status, result)
 }

@@ -13,6 +13,7 @@ func MapRoutes(router *gin.RouterGroup, store *persist.MemoryStore) {
 	router.POST("/login", LoginUser)
 	router.POST("/register", RegisterUser)
 	router.POST("/refresh", RefreshUserToken)
+
 	router.Use(middleware.Auth())
 	{
 		router.POST("/profile/:id", cache.CacheByRequestPath(store, 1*time.Minute), UploadUserProfilePicture)
