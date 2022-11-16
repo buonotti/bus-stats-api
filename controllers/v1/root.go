@@ -16,7 +16,7 @@ func MapRoutes(router *gin.RouterGroup, store *persist.MemoryStore) {
 
 	router.Use(middleware.Auth())
 	{
-		router.POST("/profile/:id", cache.CacheByRequestPath(store, 1*time.Minute), UploadUserProfilePicture)
-		router.GET("/profile/:id", GetUserProfile)
+		router.POST("/profile/:id", UploadUserProfilePicture)
+		router.GET("/profile/:id", cache.CacheByRequestPath(store, 1*time.Minute), GetUserProfile)
 	}
 }
