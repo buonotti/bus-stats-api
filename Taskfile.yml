@@ -11,7 +11,7 @@ tasks:
   dev:
     desc: "Runs the api in development mode"
     cmds:
-      - go build -o release/bus-stats-{{OS}}-{{ARCH}} && ./release/bus-stats-{{OS}}-{{ARCH}}{{if eq OS "windows"}}.exe{{end}} start --dev
+      - go build -o release/bus-stats-{{OS}}-{{ARCH}}{{if eq OS "windows"}}.exe{{end}} && ./release/bus-stats-{{OS}}-{{ARCH}}{{if eq OS "windows"}}.exe{{end}} start --dev
   run:
     desc: "Runs the api in production mode"
     cmds:
