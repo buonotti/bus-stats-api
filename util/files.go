@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func FileName(name string, ext string) string {
+func FileName(name string) string {
 	basePath := viper.GetString("storage.content_root")
-	return fmt.Sprintf("%s%c%s.%s", basePath, os.PathSeparator, name, ext)
+	return fmt.Sprintf("%s%c%s", basePath, os.PathSeparator, name)
 }

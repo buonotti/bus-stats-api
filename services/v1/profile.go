@@ -50,9 +50,9 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
 	}
 
-	fileName := util.FileName(string(userId), ext)
+	fileName := util.FileName(string(userId))
 	logging.FsLogger.Infof("saving file %s", fileName)
-	err = os.WriteFile(util.FileName(string(userId), ext), fileContent, 0644)
+	err = os.WriteFile(util.FileName(string(userId)), fileContent, 0644)
 	if err != nil {
 		logging.FsLogger.Error(err)
 		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
@@ -95,7 +95,7 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 	}
 
 	imageData := selectUserResponse.Result[0].Image
-	fileName := util.FileName(imageData.Name, imageData.Type)
+	fileName := util.FileName(imageData.Name)
 
 	fileData, err := os.ReadFile(fileName)
 	if err != nil {
