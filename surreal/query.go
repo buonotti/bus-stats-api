@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/buonotti/bus-stats-api/logging"
 	"github.com/buonotti/bus-stats-api/models"
 	"github.com/go-resty/resty/v2"
 )
 
 func Query(query string, args ...any) (*resty.Response, error) {
-	return restClient.R().SetBody(parseQuery(query, args...)).Post(Url())
+	parsedQuery := parseQuery(query, args...)
+	logging.DbLogger.Debugf("running query: %s", parsedQuery)
+	resp, err := restClient.R().SetBody(parsedQuery).Post(Url())
+	return resp, err
 }
 
 const invalidChars = `~!#$%^&*()+{}|:"<>?[]\;',/`
@@ -30,11 +34,11 @@ func parseQuery(query string, args ...any) string {
 		case "uid":
 			query = strings.Replace(query, "?", string(arg.V.(models.UserId)), 1)
 		case "string":
-			query = strings.Replace(query, "?", string(arg.V.(string)), 1)
+			query = strings.Replace(query, "?", fmt.Sprintf("'%s'", string(arg.V.(string))), 1)
 		case "number":
 			query = strings.Replace(query, "?", fmt.Sprintf("%f", arg.V.(float64)), 1)
 		case "stringer":
-			query = strings.Replace(query, "?", arg.V.(fmt.Stringer).String(), 1)
+			query = strings.Replace(query, "?", fmt.Sprintf("'%s'", arg.V.(fmt.Stringer).String()), 1)
 		default:
 			return ""
 
