@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"mime/multipart"
@@ -21,6 +22,8 @@ type SaveUserProfileResponse struct {
 
 type GetUserProfileResponse struct {
 	FileName string `json:"file_name"`
+	FileData string `json:"file_data"`
+	FileType string `json:"file_type"`
 }
 
 func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (SaveUserProfileResponse, int, error) {
@@ -94,5 +97,16 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 	imageData := selectUserResponse.Result[0].Image
 	fileName := util.FileName(imageData.Name, imageData.Type)
 
-	return GetUserProfileResponse{FileName: fileName}, http.StatusOK, nil
+	fileData, err := os.ReadFile(fileName)
+	if err != nil {
+		logging.FsLogger.Error(err)
+		return GetUserProfileResponse{}, http.StatusBadRequest, services.FileError
+	}
+	base64data := base64.RawURLEncoding.EncodeToString(fileData)
+
+	return GetUserProfileResponse{
+		FileName: fileName,
+		FileData: base64data,
+		FileType: fmt.Sprintf("image/%s", imageData.Type),
+	}, http.StatusOK, nil
 }

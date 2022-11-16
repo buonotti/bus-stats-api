@@ -67,5 +67,5 @@ func GetUserProfile(c *gin.Context) {
 		return
 	}
 
-	c.File(result.FileName)
+	c.JSON(status, result)
 }
