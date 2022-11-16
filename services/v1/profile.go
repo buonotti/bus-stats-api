@@ -102,7 +102,7 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 		logging.FsLogger.Error(err)
 		return GetUserProfileResponse{}, http.StatusBadRequest, services.FileError
 	}
-	base64data := base64.URLEncoding.EncodeToString(fileData)
+	base64data := base64.StdEncoding.EncodeToString(fileData)
 
 	return GetUserProfileResponse{
 		FileName: fileName,
