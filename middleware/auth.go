@@ -5,8 +5,8 @@ import (
 
 	"github.com/buonotti/bus-stats-api/jwt"
 	"github.com/buonotti/bus-stats-api/logging"
-	goJWT "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	goJWT "github.com/golang-jwt/jwt/v4"
 )
 
 const BEARER_SCHEMA = "Bearer "

@@ -1,8 +1,8 @@
 package jwt
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func ExtractUidFromToken(token *jwt.Token) string {

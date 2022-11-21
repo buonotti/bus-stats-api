@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/buonotti/bus-stats-api/config"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type JwtService interface {
