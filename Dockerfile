@@ -4,7 +4,11 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update
 RUN apt upgrade -y --fix-missing 
-RUN apt install -y curl golang
+RUN apt install -y curl
+
+RUN curl -SsfL https://go.dev/dl/go1.19.3.linux-amd64.tar.gz
+RUN rm -rf /usr/local/go && tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
+RUN export PATH=$PATH:/usr/local/go/bin
 
 RUN mkdir -p /api
 WORKDIR /api
