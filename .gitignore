@@ -18,7 +18,7 @@ data/images
 
 
 # exclude config
-config.toml
+# config.toml
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
