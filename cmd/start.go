@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
 	"os/signal"
-	"runtime"
 	"time"
 
 	"github.com/buonotti/bus-stats-api/config"
@@ -27,12 +25,16 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// variable holding the value of the --dev flags
 var isDev bool
 
 var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the API and the database",
+	Long:  `This command starts the api and the database. The api runs on http://localhost:8080 by default.`,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		// set the environment
 		if isDev {
 			config.Env = config.Development
 			log.SetLevel(log.DebugLevel)
@@ -40,6 +42,7 @@ var startCmd = &cobra.Command{
 			config.Env = config.Production
 			log.SetLevel(log.InfoLevel)
 		}
+
 		// init config library and load config values
 		config.Setup()
 
@@ -47,7 +50,7 @@ var startCmd = &cobra.Command{
 		logging.Setup()
 
 		// run the database
-		startDatabase()
+		surreal.Exec()
 
 		// start the web api
 		startApi(cmd, args)
@@ -57,64 +60,6 @@ var startCmd = &cobra.Command{
 func init() {
 	startCmd.Flags().BoolVar(&isDev, "dev", false, "Run the api in development mode")
 	rootCmd.AddCommand(startCmd)
-}
-
-/*
-Starts the surrealDb database in a goroutine. The executable is searched in ./bin. If the database is not reachable the
-api tries three times to connect to it. If the database schema is not created the cli also creates the table
-*/
-func startDatabase() {
-	surrealExe := viper.GetString("database.executable")
-
-	if runtime.GOOS == "windows" {
-		surrealExe = surrealExe + ".exe"
-	}
-	log.Debug(fmt.Sprintf("Db executable is: %s", surrealExe))
-	cmd := exec.Command(surrealExe)
-	mode := viper.GetString(config.Get("database.{env}.mode"))
-	user := viper.GetString(config.Get("database.{env}.user"))
-	pass := viper.GetString(config.Get("database.{env}.pass"))
-	cmd.Args = []string{surrealExe, "start", "--user", user, "--pass", pass, mode}
-	go func() {
-		err := cmd.Run()
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-	}()
-
-	for i := 3; i >= 1 && !isDbOnline(); i-- {
-		log.Warn(fmt.Sprintf("database seems not to be online. retrying to connect. tries left: %d", i))
-		cmd := exec.Command("sleep", "2")
-		err := cmd.Run()
-		if err != nil {
-			log.Error("error while waiting for db")
-			os.Exit(1)
-		}
-	}
-
-	if !isDbOnline() {
-		log.Error("could not read database")
-		os.Exit(1)
-	}
-
-	log.Info(fmt.Sprintf("started database with authentication in %s", mode))
-	isDefined := viper.GetBool("database.generated")
-	if !isDefined {
-		err := surreal.ScaffoldDB()
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-
-		log.Info("generated database tables")
-
-		viper.Set("database.generated", true)
-		err = viper.WriteConfig()
-		if err != nil {
-			log.Error(err)
-		}
-	}
 }
 
 /*
@@ -171,8 +116,4 @@ func startApi(cmd *cobra.Command, args []string) {
 	}
 
 	<-idleConnsClosed
-}
-
-func isDbOnline() bool {
-	return surreal.PingDB() == nil
 }
