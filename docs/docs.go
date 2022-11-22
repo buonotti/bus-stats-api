@@ -85,57 +85,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/logout": {
-            "post": {
-                "description": "Logs the current user out",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "authentication"
-                ],
-                "summary": "Logs a user out",
-                "operationId": "logout-user",
-                "parameters": [
-                    {
-                        "description": "content",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.LoginRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.LoginResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/services.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/services.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/services.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/profile": {
+        "/profile/:id": {
             "get": {
                 "security": [
                     {
@@ -144,7 +94,7 @@ const docTemplate = `{
                 ],
                 "description": "Get the profile picture file for the currently authenticated user",
                 "produces": [
-                    "multipart/form-data"
+                    "application/json"
                 ],
                 "tags": [
                     "user-account"
@@ -158,13 +108,20 @@ const docTemplate = `{
                         "name": "Authorization",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "user id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "binary"
+                            "$ref": "#/definitions/v1.GetUserProfileResponse"
                         }
                     },
                     "400": {
@@ -243,6 +200,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/services.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/services.ErrorResponse"
                         }
@@ -376,6 +339,20 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.GetUserProfileResponse": {
+            "type": "object",
+            "properties": {
+                "file_data": {
+                    "type": "string"
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "file_type": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.LoginRequest": {
             "type": "object",
             "required": [
@@ -397,15 +374,15 @@ const docTemplate = `{
             "properties": {
                 "token": {
                     "type": "string"
+                },
+                "uid": {
+                    "type": "string"
                 }
             }
         },
         "v1.RefreshResponse": {
             "type": "object",
             "properties": {
-                "result": {
-                    "type": "string"
-                },
                 "token": {
                     "type": "string"
                 }
@@ -430,9 +407,6 @@ const docTemplate = `{
         "v1.RegisterResponse": {
             "type": "object",
             "properties": {
-                "id": {
-                    "type": "string"
-                },
                 "result": {
                     "type": "string"
                 }

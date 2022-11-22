@@ -10,7 +10,7 @@ import (
 
 // LoginUser godoc
 // @Summary Logs a user in
-// @Schemes services.ErrorResponse serviceV1.LoginRequest
+// @Schemes serviceV1.LoginRequest serviceV1.LoginResponse services.ErrorResponse
 // @Description Logs a user in using the provided credentials
 // @ID login-user
 // @Tags authentication

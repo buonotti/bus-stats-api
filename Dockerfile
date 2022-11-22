@@ -13,7 +13,7 @@ RUN tar -C /usr/local -xzf go1.19.3.linux-amd64.tar.gz
 RUN export PATH=$PATH:/usr/local/go/bin
 
 RUN git clone https://github.com/buonotti/bus-stats-api
-WORKDIR bus-stats-api
+WORKDIR /bus-stats-api
 
 RUN curl -SsfL https://github.com/surrealdb/surrealdb/releases/download/v1.0.0-beta.8/surreal-v1.0.0-beta.8.linux-amd64.tgz --output surrealdb.tgz
 RUN mkdir tmp

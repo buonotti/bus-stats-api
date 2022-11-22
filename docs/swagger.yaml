@@ -6,6 +6,15 @@ definitions:
         example: an error has occured
         type: string
     type: object
+  v1.GetUserProfileResponse:
+    properties:
+      file_data:
+        type: string
+      file_name:
+        type: string
+      file_type:
+        type: string
+    type: object
   v1.LoginRequest:
     properties:
       email:
@@ -21,11 +30,11 @@ definitions:
     properties:
       token:
         type: string
+      uid:
+        type: string
     type: object
   v1.RefreshResponse:
     properties:
-      result:
-        type: string
       token:
         type: string
     type: object
@@ -42,8 +51,6 @@ definitions:
     type: object
   v1.RegisterResponse:
     properties:
-      id:
-        type: string
       result:
         type: string
     type: object
@@ -105,40 +112,7 @@ paths:
       summary: Logs a user in
       tags:
       - authentication
-  /logout:
-    post:
-      consumes:
-      - application/json
-      description: Logs the current user out
-      operationId: logout-user
-      parameters:
-      - description: content
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/v1.LoginRequest'
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.LoginResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/services.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/services.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/services.ErrorResponse'
-      summary: Logs a user out
-      tags:
-      - authentication
-  /profile:
+  /profile/:id:
     get:
       description: Get the profile picture file for the currently authenticated user
       operationId: get-profile
@@ -148,13 +122,18 @@ paths:
         name: Authorization
         required: true
         type: string
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
-      - multipart/form-data
+      - application/json
       responses:
         "200":
           description: OK
           schema:
-            type: binary
+            $ref: '#/definitions/v1.GetUserProfileResponse'
         "400":
           description: Bad Request
           schema:
@@ -207,6 +186,10 @@ paths:
             $ref: '#/definitions/services.ErrorResponse'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/services.ErrorResponse'
         "500":

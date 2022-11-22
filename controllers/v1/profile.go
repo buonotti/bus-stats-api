@@ -24,9 +24,10 @@ import (
 // @Param image formData file true "picture form data"
 // @Success 200 {object} v1.SaveUserProfileResponse
 // @Failure 400 {object} services.ErrorResponse
+// @Failure 404 {object} services.ErrorResponse
 // @Failure 401 {object} services.ErrorResponse
 // @Failure 500 {object} services.ErrorResponse
-// @Router /profile [post]
+// @Router /profile/:id [post]
 func UploadUserProfilePicture(c *gin.Context) {
 	userId := jwt.ExtractUidFromHeader(c)
 	fileForm, err := c.FormFile("image")
@@ -51,13 +52,15 @@ func UploadUserProfilePicture(c *gin.Context) {
 // @Tags user-account
 // @Security ApiKeyAuth
 // @param Authorization header string true "Authorization"
-// @Schemes services.ErrorResponse
-// @Produce multipart/form-data
-// @Success 200 binary formData
+// @Schemes serviceV1.GetUserProfileResponse services.ErrorResponse
+// @Produce application/json
+// @Param id path string true "user id"
+// @Success 200 {object} serviceV1.GetUserProfileResponse
 // @Failure 400 {object} services.ErrorResponse
 // @Failure 401 {object} services.ErrorResponse
+// @Failure 404 {object} services.ErrorResponse
 // @Failure 500 {object} services.ErrorResponse
-// @Router /profile [get]
+// @Router /profile/:id [get]
 func GetUserProfile(c *gin.Context) {
 	userId := jwt.ExtractUidFromHeader(c)
 
