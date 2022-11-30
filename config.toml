@@ -5,7 +5,7 @@ lifespan = 1
 
 [database]
 executable = './surrealdb'
-generated = false
+generated = true
 
 [database.development]
 db = 'bus-stats'

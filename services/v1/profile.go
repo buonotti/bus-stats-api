@@ -59,6 +59,9 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 		return SaveUserProfileResponse{}, http.StatusBadRequest, errors.FileSizeError.New("file too big")
 	}
 
+	fmt.Printf("file size: %d\n", len(fileContent))
+	fmt.Printf("file type: %s\n", mimeType)
+
 	fileName := util.FileName(string(userId))
 	logging.FsLogger.Infof("saving file %s", fileName)
 	err = os.WriteFile(util.FileName(string(userId)), fileContent, 0644)
