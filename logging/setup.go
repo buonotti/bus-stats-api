@@ -1,12 +1,12 @@
 package logging
 
 import (
-	"github.com/buonotti/bus-stats-api/config"
+	"github.com/buonotti/bus-stats-api/config/env"
 	log "github.com/sirupsen/logrus"
 )
 
 func Setup() {
-	if config.Env == config.Development {
+	if env.Env == env.Development {
 		log.SetFormatter(&log.TextFormatter{
 			ForceColors:  true,
 			PadLevelText: true,

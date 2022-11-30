@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/spf13/cobra"
+	"github.com/buonotti/bus-stats-api/errors"
 	"github.com/spf13/viper"
 )
 
@@ -9,5 +9,8 @@ func Setup() {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
-	cobra.CheckErr(err)
+	if err != nil {
+		err = errors.ConfigFileParseError.WrapWithNoMessage(err)
+	}
+	errors.CheckError(err)
 }

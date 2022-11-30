@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/buonotti/bus-stats-api/config"
+	"github.com/buonotti/bus-stats-api/config/env"
 	"github.com/buonotti/bus-stats-api/controllers"
 	"github.com/buonotti/bus-stats-api/logging"
 	"github.com/buonotti/bus-stats-api/middleware"
@@ -36,10 +36,10 @@ var startCmd = &cobra.Command{
 
 		// set the environment
 		if isDev {
-			config.Env = config.Development
+			env.Env = env.Development
 			log.SetLevel(log.DebugLevel)
 		} else {
-			config.Env = config.Production
+			env.Env = env.Production
 			log.SetLevel(log.InfoLevel)
 		}
 
@@ -66,9 +66,9 @@ func init() {
 Entry point for the api
 */
 func startApi(cmd *cobra.Command, args []string) {
-	docs.SwaggerInfo.BasePath = viper.GetString(config.Get("api.base_path"))
-	gin.SetMode(viper.GetString(config.Get("gin.{env}.mode")))
-	trustedProxies := viper.GetStringSlice(config.Get("gin.{env}.trusted_proxies"))
+	docs.SwaggerInfo.BasePath = viper.GetString(env.Get("api.base_path"))
+	gin.SetMode(viper.GetString(env.Get("gin.{env}.mode")))
+	trustedProxies := viper.GetStringSlice(env.Get("gin.{env}.trusted_proxies"))
 
 	store := persist.NewMemoryStore(2 * time.Minute)
 
@@ -76,7 +76,7 @@ func startApi(cmd *cobra.Command, args []string) {
 	router.Use(logging.LogrusLogger())
 	router.Use(gin.Recovery())
 	router.Use(middleware.CORSMiddleware())
-	if config.Env == config.Development {
+	if env.Env == env.Development {
 		router.SetTrustedProxies(trustedProxies)
 	}
 	router.GET("/health", controllers.HealthEndpoint)
@@ -100,11 +100,11 @@ func startApi(cmd *cobra.Command, args []string) {
 			panic(err) // TODO
 		}
 		log.Info("shut down server")
-		if viper.GetString(config.Get("database.{env}.mode")) == "memory" {
+		if viper.GetString(env.Get("database.{env}.mode")) == "memory" {
 			viper.Set("database.generated", false)
 			err := viper.WriteConfig()
 			if err != nil {
-				fmt.Println(err)
+				// TOOO
 			}
 		}
 		close(idleConnsClosed)

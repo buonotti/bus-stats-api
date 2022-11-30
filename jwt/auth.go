@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/buonotti/bus-stats-api/config"
+	"github.com/buonotti/bus-stats-api/config/env"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -16,7 +16,7 @@ type JwtService interface {
 
 type authCustomClaims struct {
 	Uid string `json:"uid"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 type jwtServices struct {
@@ -26,7 +26,7 @@ type jwtServices struct {
 
 func Service() JwtService {
 	return &jwtServices{
-		secretKey: config.Get("api.key"),
+		secretKey: env.Get("api.key"),
 		issure:    "Buonotti",
 	}
 }
@@ -34,10 +34,10 @@ func Service() JwtService {
 func (service *jwtServices) GenerateToken(uid string) (string, error) {
 	claims := &authCustomClaims{
 		uid,
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 48).Unix(),
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 48)),
 			Issuer:    service.issure,
-			IssuedAt:  time.Now().Unix(),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

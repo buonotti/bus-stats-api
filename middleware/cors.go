@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/buonotti/bus-stats-api/config"
+	"github.com/buonotti/bus-stats-api/config/env"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -9,7 +9,7 @@ import (
 // Cors is a middleware that adds CORS headers to the response
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", viper.GetString(config.Get("gin.{env}.allow_origin")))
+		c.Writer.Header().Set("Access-Control-Allow-Origin", viper.GetString(env.Get("gin.{env}.allow_origin")))
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")

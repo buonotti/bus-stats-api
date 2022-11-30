@@ -3,6 +3,7 @@ package v1
 import (
 	"net/http"
 
+	"github.com/buonotti/bus-stats-api/errors"
 	"github.com/buonotti/bus-stats-api/services"
 	serviceV1 "github.com/buonotti/bus-stats-api/services/v1"
 	"github.com/gin-gonic/gin"
@@ -25,6 +26,7 @@ import (
 func RegisterUser(c *gin.Context) {
 	var request serviceV1.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
+		err = errors.MalformedRequestError.Wrap(err, "malformed request. cannot bind json")
 		c.AbortWithStatusJSON(http.StatusBadRequest, services.ErrorResponse{Message: err.Error()})
 		return
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/buonotti/bus-stats-api/errors"
 	"github.com/buonotti/bus-stats-api/logging"
 	"github.com/buonotti/bus-stats-api/models"
 	"github.com/go-resty/resty/v2"
@@ -13,6 +14,9 @@ func Query(query string, args ...any) (*resty.Response, error) {
 	parsedQuery := parseQuery(query, args...)
 	logging.DbLogger.Debugf("running query: %s", parsedQuery)
 	resp, err := restClient.R().SetBody(parsedQuery).Post(Url())
+	if err != nil {
+		return nil, errors.SurrealQueryError.WrapWithNoMessage(err)
+	}
 	return resp, err
 }
 

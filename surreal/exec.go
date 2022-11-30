@@ -2,11 +2,13 @@ package surreal
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"runtime"
 
-	"github.com/buonotti/bus-stats-api/config"
+	es "errors"
+
+	"github.com/buonotti/bus-stats-api/config/env"
+	"github.com/buonotti/bus-stats-api/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -23,15 +25,15 @@ func Exec() {
 	}
 	log.Debug(fmt.Sprintf("Db executable is: %s", surrealExe))
 	cmd := exec.Command(surrealExe)
-	mode := viper.GetString(config.Get("database.{env}.mode"))
-	user := viper.GetString(config.Get("database.{env}.user"))
-	pass := viper.GetString(config.Get("database.{env}.pass"))
+	mode := viper.GetString(env.Get("database.{env}.mode"))
+	user := viper.GetString(env.Get("database.{env}.user"))
+	pass := viper.GetString(env.Get("database.{env}.pass"))
 	cmd.Args = []string{surrealExe, "start", "--user", user, "--pass", pass, mode}
 	go func() {
 		err := cmd.Run()
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
+		if err != nil && es.Is(err, &exec.ExitError{}) {
+			errors.SurrealExecError.WrapWithNoMessage(err)
+			errors.CheckError(err)
 		}
 	}()
 
@@ -40,32 +42,30 @@ func Exec() {
 		cmd := exec.Command("sleep", "2")
 		err := cmd.Run()
 		if err != nil {
-			log.Error("error while waiting for db")
-			os.Exit(1)
+			errors.SurrealExecError.WrapWithNoMessage(err)
 		}
+		errors.CheckError(err)
 	}
 
 	if !isDbOnline() {
-		log.Error("could not read database")
-		os.Exit(1)
+		err := errors.SurrealNotReachableError.New("database is not reachable")
+		errors.CheckError(err)
 	}
 
 	log.Info(fmt.Sprintf("started database with authentication in %s", mode))
 	isDefined := viper.GetBool("database.generated")
 	if !isDefined {
 		err := ScaffoldDB()
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
+		errors.CheckError(err)
 
 		log.Info("generated database tables")
 
 		viper.Set("database.generated", true)
 		err = viper.WriteConfig()
 		if err != nil {
-			log.Error(err)
+			err = errors.CannotWriteConfigFileError.WrapWithNoMessage(err)
 		}
+		errors.CheckError(err)
 	}
 }
 

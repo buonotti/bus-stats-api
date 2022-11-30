@@ -15,6 +15,7 @@ surrealdb*
 release/
 data/database
 data/images
+bus-stats-api*
 
 
 # exclude config

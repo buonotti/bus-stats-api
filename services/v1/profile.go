@@ -9,9 +9,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/buonotti/bus-stats-api/errors"
 	"github.com/buonotti/bus-stats-api/logging"
 	"github.com/buonotti/bus-stats-api/models"
-	"github.com/buonotti/bus-stats-api/services"
 	"github.com/buonotti/bus-stats-api/surreal"
 	"github.com/buonotti/bus-stats-api/util"
 )
@@ -30,7 +30,7 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 	file, err := formFile.Open()
 	if err != nil {
 		logging.FsLogger.Error(err)
-		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
+		return SaveUserProfileResponse{}, http.StatusBadRequest, errors.CannotReadFileError.New("cannot read form file")
 	}
 
 	defer func(file multipart.File) {
@@ -47,7 +47,12 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 	_, err = file.Read(fileContent)
 	if err != nil {
 		logging.FsLogger.Error(err)
-		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
+		return SaveUserProfileResponse{}, http.StatusBadRequest, errors.CannotReadFileError.New("cannot read form file")
+	}
+
+	mimeType := http.DetectContentType(fileContent)
+	if mimeType != "image/jpeg" && mimeType != "image/png" {
+		return SaveUserProfileResponse{}, http.StatusBadRequest, errors.MimeTypeError.New("invalid file type")
 	}
 
 	fileName := util.FileName(string(userId))
@@ -55,14 +60,14 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 	err = os.WriteFile(util.FileName(string(userId)), fileContent, 0644)
 	if err != nil {
 		logging.FsLogger.Error(err)
-		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
+		return SaveUserProfileResponse{}, http.StatusBadRequest, errors.CannotWriteFileError.New("cannot write file to disk")
 	}
 
 	_, err = surreal.Query("UPDATE user:? SET image.name = ?, image.type = ?", userId, string(userId), ext)
 
 	if err != nil {
 		logging.DbLogger.Error(err)
-		return SaveUserProfileResponse{}, http.StatusBadRequest, services.FileError
+		return SaveUserProfileResponse{}, http.StatusBadRequest, errors.SurrealQueryError.New("cannot update user image")
 	}
 
 	return SaveUserProfileResponse{
@@ -75,7 +80,7 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 
 	if err != nil {
 		logging.DbLogger.Error(err)
-		return GetUserProfileResponse{}, http.StatusUnauthorized, services.CredentialError
+		return GetUserProfileResponse{}, http.StatusUnauthorized, errors.SurrealQueryError.New("cannot get user image data")
 	}
 
 	var selectUserResponse models.UserSelectResult
@@ -83,15 +88,15 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 	err = json.Unmarshal([]byte(responseString), &selectUserResponse)
 	if err != nil {
 		logging.ApiLogger.Error(err)
-		return GetUserProfileResponse{}, http.StatusBadRequest, services.FormatError
+		return GetUserProfileResponse{}, http.StatusBadRequest, errors.SurrealDeserializaError.New("cannot deserialize user image data")
 	}
 
 	if len(selectUserResponse.Result) < 1 {
-		return GetUserProfileResponse{}, http.StatusNotFound, fmt.Errorf("user not found")
+		return GetUserProfileResponse{}, http.StatusNotFound, errors.UserNotFoundError.New("user not found")
 	}
 
 	if selectUserResponse.Result[0].Image.Name == "" {
-		return GetUserProfileResponse{}, http.StatusNotFound, fmt.Errorf("no image found")
+		return GetUserProfileResponse{}, http.StatusNotFound, errors.UserNoProfileError.New("user has no profile image")
 	}
 
 	imageData := selectUserResponse.Result[0].Image
@@ -100,7 +105,7 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 	fileData, err := os.ReadFile(fileName)
 	if err != nil {
 		logging.FsLogger.Error(err)
-		return GetUserProfileResponse{}, http.StatusBadRequest, services.FileError
+		return GetUserProfileResponse{}, http.StatusBadRequest, errors.CannotReadFileError.New("cannot read file from disk")
 	}
 	base64data := base64.StdEncoding.EncodeToString(fileData)
 
