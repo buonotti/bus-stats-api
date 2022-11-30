@@ -51,8 +51,12 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 	}
 
 	mimeType := http.DetectContentType(fileContent)
-	if mimeType != "image/jpeg" && mimeType != "image/png" {
+	if mimeType != "image/jpeg" && mimeType != "image/png" && mimeType != "image/svg+xml" {
 		return SaveUserProfileResponse{}, http.StatusBadRequest, errors.MimeTypeError.New("invalid file type")
+	}
+
+	if len(fileContent) > 10_000_000 {
+		return SaveUserProfileResponse{}, http.StatusBadRequest, errors.FileSizeError.New("file too big")
 	}
 
 	fileName := util.FileName(string(userId))
