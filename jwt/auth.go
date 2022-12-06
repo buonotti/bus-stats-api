@@ -1,10 +1,10 @@
 package jwt
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/buonotti/bus-stats-api/config/env"
+	"github.com/buonotti/bus-stats-api/errors"
 	"github.com/golang-jwt/jwt/v4"
 )
 
@@ -48,7 +48,7 @@ func (service *jwtServices) GenerateToken(uid string) (string, error) {
 func (service *jwtServices) ValidateToken(encodedToken string) (*jwt.Token, error) {
 	return jwt.Parse(encodedToken, func(token *jwt.Token) (interface{}, error) {
 		if _, isvalid := token.Method.(*jwt.SigningMethodHMAC); !isvalid {
-			return nil, fmt.Errorf("invalid token %s", token.Header["alg"])
+			return nil, errors.TokenError.New("invalid token %s", token.Header["alg"])
 		}
 		return []byte(service.secretKey), nil
 	})

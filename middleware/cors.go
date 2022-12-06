@@ -7,7 +7,7 @@ import (
 )
 
 // Cors is a middleware that adds CORS headers to the response
-func CORSMiddleware() gin.HandlerFunc {
+func CORS() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", viper.GetString(env.Get("gin.{env}.allow_origin")))
 		c.Writer.Header().Set("Access-Control-Max-Age", "86400")

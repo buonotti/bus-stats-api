@@ -17,6 +17,11 @@ func LogrusLogger() gin.HandlerFunc {
 		t := time.Now()
 		c.Next()
 		elapsed := time.Since(t)
-		ApiLogger.WithFields(logrus.Fields{"time": fmt.Sprintf("%dms", elapsed.Milliseconds()), "status": c.Writer.Status(), "method": c.Request.Method}).Info(url)
+		ApiLogger.WithFields(logrus.Fields{
+			"time": fmt.Sprintf("%dms", elapsed.Milliseconds()),
+			"status": c.Writer.Status(),
+			"method": c.Request.Method,
+			"ip": c.ClientIP(),
+		}).Info(url)
 	}
 }

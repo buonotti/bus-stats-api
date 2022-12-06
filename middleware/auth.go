@@ -3,8 +3,10 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/buonotti/bus-stats-api/errors"
 	"github.com/buonotti/bus-stats-api/jwt"
 	"github.com/buonotti/bus-stats-api/logging"
+	"github.com/buonotti/bus-stats-api/services"
 	"github.com/gin-gonic/gin"
 	goJWT "github.com/golang-jwt/jwt/v4"
 )
@@ -19,7 +21,8 @@ func Auth() gin.HandlerFunc {
 		// Get the token string from the header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" || len(authHeader) <= len(BEARER_SCHEMA)+1 {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "missing auth token"})
+			err := errors.TokenError.New("missing auth token")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, services.ErrorResponse{Message: err.Error()})
 			return
 		}
 

@@ -75,7 +75,8 @@ func startApi(cmd *cobra.Command, args []string) {
 	router := gin.New()
 	router.Use(logging.LogrusLogger())
 	router.Use(gin.Recovery())
-	router.Use(middleware.CORSMiddleware())
+	router.Use(middleware.CORS())
+	router.Use(middleware.Limiter())
 	if env.Env == env.Development {
 		router.SetTrustedProxies(trustedProxies)
 	}
@@ -104,7 +105,7 @@ func startApi(cmd *cobra.Command, args []string) {
 			viper.Set("database.generated", false)
 			err := viper.WriteConfig()
 			if err != nil {
-				// TOOO
+				panic(err) // TODO
 			}
 		}
 		close(idleConnsClosed)
