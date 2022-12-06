@@ -8,13 +8,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-var restClient = resty.New().
-	SetBasicAuth("root", "root").
+func restClient() *resty.Client {
+	return resty.New().
+	SetBasicAuth(viper.GetString(env.Get("database.{env}.user")), viper.GetString(env.Get("database.{env}.pass"))).
 	SetHeader("Content-Type", "text/plain").
-	SetHeader("NS", viper.GetString("database.{env}.ns")).
-	SetHeader("DB", viper.GetString("database.{env}.db")).
+	SetHeader("NS", viper.GetString(env.Get("database.{env}.ns"))).
+	SetHeader("DB", viper.GetString(env.Get("database.{env}.db"))).
 	SetHeader("Accept", "application/json").
 	SetDisableWarn(true)
+}
 
 func Url() string {
 	protocol := viper.GetString(env.Get("database.{env}.protocol"))

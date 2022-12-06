@@ -13,7 +13,7 @@ import (
 func Query(query string, args ...any) (*resty.Response, error) {
 	parsedQuery := parseQuery(query, args...)
 	logging.DbLogger.Debugf("running query: %s", parsedQuery)
-	resp, err := restClient.R().SetBody(parsedQuery).Post(Url())
+	resp, err := restClient().R().SetBody(parsedQuery).Post(Url())
 	if err != nil {
 		return nil, errors.SurrealQueryError.WrapWithNoMessage(err)
 	}

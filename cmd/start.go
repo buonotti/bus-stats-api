@@ -79,7 +79,7 @@ func startApi(cmd *cobra.Command, args []string) {
 	if env.Env == env.Development {
 		router.SetTrustedProxies(trustedProxies)
 	}
-	router.GET("/health", controllers.HealthEndpoint)
+	router.GET("/health", controllers.GetHealth)
 
 	v1 := router.Group("/api/v1")
 
