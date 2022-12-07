@@ -79,7 +79,7 @@ func GetUserProfile(c *gin.Context) {
 // @ID delete-profile
 // @Tags user-account
 // @Security ApiKeyAuth
-// @param Authorization header string true "
+// @param Authorization header string true "Authorization"
 // @Schemes serviceV1.DeleteUserProfileResponse services.ErrorResponse
 // @Produce application/json
 // @Param id path string true "user id"

@@ -6,6 +6,11 @@ definitions:
         example: an error has occured
         type: string
     type: object
+  v1.DeleteUserProfileResponse:
+    properties:
+      result:
+        type: string
+    type: object
   v1.GetUserProfileResponse:
     properties:
       file_data:
@@ -113,6 +118,49 @@ paths:
       tags:
       - authentication
   /profile/:id:
+    delete:
+      description: Delete the profile picture file for the currently authenticated
+        user
+      operationId: delete-profile
+      parameters:
+      - description: Authorization
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.DeleteUserProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete the profile picture a user
+      tags:
+      - user-account
     get:
       description: Get the profile picture file for the currently authenticated user
       operationId: get-profile
@@ -140,6 +188,10 @@ paths:
             $ref: '#/definitions/services.ErrorResponse'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/services.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/services.ErrorResponse'
         "500":

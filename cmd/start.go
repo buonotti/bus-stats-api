@@ -73,10 +73,10 @@ func startApi(cmd *cobra.Command, args []string) {
 	store := persist.NewMemoryStore(2 * time.Minute)
 
 	router := gin.New()
+	router.Use(middleware.CORS())
 	router.Use(logging.LogrusLogger())
 	router.Use(gin.Recovery())
-	router.Use(middleware.CORS())
-	router.Use(middleware.Limiter())
+	//router.Use(middleware.Limiter())
 	if env.Env == env.Development {
 		router.SetTrustedProxies(trustedProxies)
 	}
