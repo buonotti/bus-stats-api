@@ -1,10 +1,7 @@
 package v1
 
 import (
-	"time"
-
 	"github.com/buonotti/bus-stats-api/middleware"
-	cache "github.com/chenyahui/gin-cache"
 	"github.com/chenyahui/gin-cache/persist"
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +14,8 @@ func MapRoutes(router *gin.RouterGroup, store *persist.MemoryStore) {
 	router.Use(middleware.Auth())
 	{
 		router.POST("/profile/:id", UploadUserProfile)
-		router.GET("/profile/:id", cache.CacheByRequestPath(store, 1*time.Minute), GetUserProfile)
+		// router.GET("/profile/:id", cache.CacheByRequestPath(store, 1*time.Minute), GetUserProfile)
+		router.GET("/profile/:id", GetUserProfile)
 		router.DELETE("/profile/:id", DeleteUserProfile)
 	}
 }
