@@ -11,7 +11,9 @@ func Setup() {
 			ForceColors:  true,
 			PadLevelText: true,
 		})
+		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetFormatter(&log.JSONFormatter{})
+		log.SetLevel(log.InfoLevel)
 	}
 }
