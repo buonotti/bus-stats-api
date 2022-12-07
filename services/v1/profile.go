@@ -82,7 +82,7 @@ func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (Save
 	}
 
 	return SaveUserProfileResponse{
-		Result: "OK",
+		Result: "ok",
 	}, http.StatusOK, nil
 }
 
@@ -169,6 +169,6 @@ func DeleteUserProfile(userId models.UserId) (DeleteUserProfileResponse, int, er
 	}
 
 	return DeleteUserProfileResponse{
-		Result: "OK",
+		Result: "ok",
 	}, http.StatusOK, nil
 }
