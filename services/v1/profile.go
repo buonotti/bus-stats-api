@@ -144,10 +144,12 @@ func DeleteUserProfile(userId models.UserId) (DeleteUserProfileResponse, int, er
 	}
 
 	if len(selectUserResponse.Result) < 1 {
+		logging.ApiLogger.Error(err)
 		return DeleteUserProfileResponse{}, http.StatusNotFound, errors.UserNotFoundError.New("user not found")
 	}
 
 	if selectUserResponse.Result[0].Image.Name == "" {
+		logging.ApiLogger.Error(err)
 		return DeleteUserProfileResponse{}, http.StatusNotFound, errors.UserNoProfileError.New("user has no profile image")
 	}
 
