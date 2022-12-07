@@ -26,6 +26,10 @@ type GetUserProfileResponse struct {
 	FileType string `json:"file_type"`
 }
 
+type DeleteUserProfileResponse struct {
+	Result string `json:"result"`
+}
+
 func SaveUserProfile(userId models.UserId, formFile *multipart.FileHeader) (SaveUserProfileResponse, int, error) {
 	file, err := formFile.Open()
 	if err != nil {
@@ -120,5 +124,49 @@ func GetUserProfile(userId models.UserId) (GetUserProfileResponse, int, error) {
 		FileName: fileName,
 		FileData: base64data,
 		FileType: fmt.Sprintf("image/%s", imageData.Type),
+	}, http.StatusOK, nil
+}
+
+func DeleteUserProfile(userId models.UserId) (DeleteUserProfileResponse, int, error) {
+	selectResponse, err := surreal.Query("SELECT * FROM user:" + string(userId))
+
+	if err != nil {
+		logging.DbLogger.Error(err)
+		return DeleteUserProfileResponse{}, http.StatusUnauthorized, errors.SurrealQueryError.New("cannot get user image data")
+	}
+
+	var selectUserResponse models.UserSelectResult
+	responseString := surreal.FormatResponse(selectResponse)
+	err = json.Unmarshal([]byte(responseString), &selectUserResponse)
+	if err != nil {
+		logging.ApiLogger.Error(err)
+		return DeleteUserProfileResponse{}, http.StatusBadRequest, errors.SurrealDeserializaError.New("cannot deserialize user image data")
+	}
+
+	if len(selectUserResponse.Result) < 1 {
+		return DeleteUserProfileResponse{}, http.StatusNotFound, errors.UserNotFoundError.New("user not found")
+	}
+
+	if selectUserResponse.Result[0].Image.Name == "" {
+		return DeleteUserProfileResponse{}, http.StatusNotFound, errors.UserNoProfileError.New("user has no profile image")
+	}
+
+	imageData := selectUserResponse.Result[0].Image
+	fileName := util.FileName(imageData.Name)
+
+	err = os.Remove(fileName)
+	if err != nil {
+		logging.FsLogger.Error(err)
+		return DeleteUserProfileResponse{}, http.StatusBadRequest, errors.CannotReadFileError.New("cannot delete file from disk")
+	}
+
+	_, err = surreal.Query("UPDATE user:? SET image.name = ?, image.type = ?", userId, "", "")
+	if err != nil {
+		logging.DbLogger.Error(err)
+		return DeleteUserProfileResponse{}, http.StatusBadRequest, errors.SurrealQueryError.New("cannot update user image")
+	}
+
+	return DeleteUserProfileResponse{
+		Result: "OK",
 	}, http.StatusOK, nil
 }
